@@ -1,0 +1,173 @@
+# Azure Storage Services
+
+This section covers Azure storage services and concepts based on hands-on training sessions.
+
+## Table of Contents
+
+- [Topics Covered](#topics-covered)
+- [Concepts](#concepts)
+- [Hands-On Labs](#hands-on-labs)
+- [Assignments](#assignments)
+- [Getting Started](#getting-started)
+
+## Topics Covered
+
+Explore these comprehensive concept guides to understand Azure Storage Services:
+
+### [Data Types Overview](Concepts/00-DataTypes.md)
+Learn about structured, semi-structured, and unstructured data types, and how to choose the right Azure storage solution for each.
+
+**Key Topics**:
+- Structured vs Semi-Structured vs Unstructured Data
+- RDBMS vs NoSQL comparison
+- Decision matrix for choosing storage types
+
+---
+
+### [Azure Storage Accounts](Concepts/01-StorageAccounts.md)
+Understand storage account fundamentals, performance tiers, redundancy options, and configuration best practices.
+
+**Key Topics**:
+- Creating and naming storage accounts
+- Performance tiers (Standard vs Premium)
+- Redundancy options (LRS, ZRS, GRS, RA-GRS, GZRS)
+- Access tiers (Hot, Cool, Cold, Archive)
+- Security and access control (Keys, SAS tokens)
+
+---
+
+### [Blob Containers and Access Levels](Concepts/02-BlobContainers.md)
+Deep dive into blob containers, access levels, and data recovery features.
+
+**Key Topics**:
+- Container access levels (Private, Blob, Container)
+- Anonymous access configuration
+- Soft delete for containers and blobs
+- Blob versioning and lifecycle management
+
+---
+
+### [Storage Services Overview](Concepts/03-StorageServices.md)
+Comprehensive guide to all Azure Storage services: Blobs, Files, Queues, and Tables.
+
+**Key Topics**:
+- Blob Storage (Block, Append, Page blobs)
+- File Shares (SMB/NFS, mounting on VMs)
+- Queue Storage (messaging and decoupling)
+- Table Storage (NoSQL key-value store)
+- Service comparison and integration scenarios
+
+---
+
+### [Real-World Use Cases and Advanced Topics](Concepts/04-UseCases.md)
+Practical scenarios and advanced integration patterns from production environments.
+
+**Key Topics**:
+- Automated image processing pipelines
+- Kubernetes and container integration
+- IoT data ingestion and processing
+- COVID-19 patient tracking system (static website + Azure Tables)
+- PowerBI integration for analytics and dashboards
+- Accessing private containers (Keys, SAS, Managed Identities)
+- Mounting file shares on VMs
+- Batch operations and programmatic access
+
+---
+
+### [Azure Tables](Concepts/05-AzureTables.md)
+Comprehensive guide to Azure Table Storage, a NoSQL key-value store for structured data.
+
+**Key Topics**:
+- Introduction to Azure Tables and NoSQL concepts
+- Table structure (Partition Key and Row Key)
+- Python SDK setup and configuration
+- CRUD operations with code examples
+- Connection strings vs SAS tokens
+- Real-world use cases (COVID-19 patient tracking)
+- Query patterns and best practices
+- Cost and performance considerations
+
+---
+
+### [Static Website Hosting](Concepts/06-StaticWebsiteHosting.md)
+Learn how to host static websites directly from Azure Storage without a web server.
+
+**Key Topics**:
+- Enabling static website hosting
+- Required files and folder structure
+- Accessing static websites via URLs
+- Integration with Azure Tables for data storage
+- COVID-19 patient tracking case study (deployed in 1 day)
+- Benefits, limitations, and workarounds
+- Best practices for security and performance
+
+---
+
+### [Python SDK for Azure Storage](Concepts/07-PythonSDK.md)
+Complete guide to using Python for programmatic access to Azure Storage services.
+
+**Key Topics**:
+- Installing Python, pip, and Azure packages
+- Authentication methods (connection strings, SAS, managed identities)
+- Working with Azure Tables (TableServiceClient, TableClient)
+- Working with Blob Storage (BlobServiceClient, ContainerClient)
+- Complete code examples for common scenarios
+- Error handling and best practices
+
+## Concepts
+
+Dive deeper into specific Azure Storage concepts with these detailed guides:
+
+- **[00 - Data Types Overview](Concepts/00-DataTypes.md)** - Understanding structured, semi-structured, and unstructured data
+- **[01 - Azure Storage Accounts](Concepts/01-StorageAccounts.md)** - Performance tiers, redundancy, and configuration
+- **[02 - Blob Containers and Access Levels](Concepts/02-BlobContainers.md)** - Container management, security, and SAS tokens
+- **[03 - Storage Services Overview](Concepts/03-StorageServices.md)** - Blobs, Files, Queues, and Tables
+- **[04 - Real-World Use Cases](Concepts/04-UseCases.md)** - Practical scenarios and advanced integration patterns
+- **[05 - Azure Tables](Concepts/05-AzureTables.md)** - NoSQL key-value store for structured data
+- **[06 - Static Website Hosting](Concepts/06-StaticWebsiteHosting.md)** - Host static websites directly from Azure Storage
+- **[07 - Python SDK Guide](Concepts/07-PythonSDK.md)** - Programmatic access to Azure Storage with Python
+
+## Hands-On Labs
+
+Practice your Azure Storage skills with these comprehensive labs:
+
+### [Lab 01: Azure Blob Storage - Storage Accounts and Container Access Levels](Labs/Lab01-BlobStorage.md)
+**Duration**: 45-60 minutes | **Difficulty**: Beginner
+
+Learn how to create and configure Azure Storage Accounts, work with blob containers, and understand different access levels through hands-on exercises.
+
+**What you'll learn:**
+- Create resource groups and storage accounts
+- Configure blob containers with private, blob-level, and container-level access
+- Upload and manage blobs
+- Test and validate anonymous access behavior
+- Apply real-world scenarios for image processing workflows
+
+## Assignments
+
+Practice essential Azure storage operations with these hands-on assignments:
+
+### [Assignment 1: Azure File Shares](Assignments/Assignment01-AzureFileShares.md)
+**Topics**: File share creation, mounting on Windows/Linux, performance tiers, security
+
+Learn how to create and use Azure File Shares for shared storage across multiple VMs. Covers SMB/NFS protocols, persistent mounting, Azure AD authentication, and real-world use cases.
+
+---
+
+### [Assignment 2: Add Additional Disk to Existing VM](Assignments/Assignment02-AddDiskToVM.md)
+**Topics**: Disk types, creation, attachment, initialization, formatting
+
+Learn how to add additional data disks to Azure VMs. Covers disk performance tiers, initialization on Windows (Disk Management, PowerShell) and Linux (fdisk, parted), and making mounts persistent.
+
+---
+
+### [Assignment 3: Extend Storage of Attached Disk](Assignments/Assignment03-ExtendDiskStorage.md)
+**Topics**: Disk expansion, snapshot creation, partition extension, filesystem resizing
+
+Learn how to expand existing disks when running out of space. Covers snapshot creation, Azure disk expansion, partition extension on Windows and Linux, and troubleshooting common issues.
+
+---
+
+## Getting Started
+
+Explore the topics above to learn about Azure storage services and how to implement efficient, secure data storage solutions in Azure. Each topic includes practical examples and real-world scenarios from production environments.
