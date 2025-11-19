@@ -679,3 +679,8 @@ Azure Table Storage is a powerful, cost-effective solution for storing large amo
 - [Static Website Hosting](06-StaticWebsiteHosting.md)
 - [Python SDK Guide](07-PythonSDK.md)
 - [Real-World Use Cases](04-UseCases.md)
+
+## Hands-On Practice
+
+- [Assignment 1: Azure File Shares](../Assignments/Assignment01-AzureFileShares.md) - Learn to create and mount file shares
+- [Assignment 2: Add Disk to VM](../Assignments/Assignment02-AddDiskToVM.md) - Add additional storage to VMs

@@ -7,6 +7,7 @@ This section covers Azure storage services and concepts based on hands-on traini
 - [Topics Covered](#topics-covered)
 - [Concepts](#concepts)
 - [Hands-On Labs](#hands-on-labs)
+- [Assignments](#assignments)
 - [Getting Started](#getting-started)
 
 ## Topics Covered
@@ -141,6 +142,31 @@ Learn how to create and configure Azure Storage Accounts, work with blob contain
 - Upload and manage blobs
 - Test and validate anonymous access behavior
 - Apply real-world scenarios for image processing workflows
+
+## Assignments
+
+Practice essential Azure storage operations with these hands-on assignments:
+
+### [Assignment 1: Azure File Shares](Assignments/Assignment01-AzureFileShares.md)
+**Topics**: File share creation, mounting on Windows/Linux, performance tiers, security
+
+Learn how to create and use Azure File Shares for shared storage across multiple VMs. Covers SMB/NFS protocols, persistent mounting, Azure AD authentication, and real-world use cases.
+
+---
+
+### [Assignment 2: Add Additional Disk to Existing VM](Assignments/Assignment02-AddDiskToVM.md)
+**Topics**: Disk types, creation, attachment, initialization, formatting
+
+Learn how to add additional data disks to Azure VMs. Covers disk performance tiers, initialization on Windows (Disk Management, PowerShell) and Linux (fdisk, parted), and making mounts persistent.
+
+---
+
+### [Assignment 3: Extend Storage of Attached Disk](Assignments/Assignment03-ExtendDiskStorage.md)
+**Topics**: Disk expansion, snapshot creation, partition extension, filesystem resizing
+
+Learn how to expand existing disks when running out of space. Covers snapshot creation, Azure disk expansion, partition extension on Windows and Linux, and troubleshooting common issues.
+
+---
 
 ## Getting Started
 

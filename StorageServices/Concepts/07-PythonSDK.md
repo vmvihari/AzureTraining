@@ -778,3 +778,9 @@ The Azure Storage Python SDK provides powerful tools for programmatic access to 
 - [Blob Containers and Access Levels](02-BlobContainers.md)
 - [Static Website Hosting](06-StaticWebsiteHosting.md)
 - [Real-World Use Cases](04-UseCases.md)
+
+## Hands-On Practice
+
+- [Assignment 1: Azure File Shares](../Assignments/Assignment01-AzureFileShares.md) - Learn to create and mount file shares
+- [Assignment 2: Add Disk to VM](../Assignments/Assignment02-AddDiskToVM.md) - Add additional storage to VMs
+- [Assignment 3: Extend Disk Storage](../Assignments/Assignment03-ExtendDiskStorage.md) - Expand existing disks

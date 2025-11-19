@@ -475,3 +475,10 @@ Azure Storage provides four complementary services:
 - [Azure Storage Accounts](01-StorageAccounts.md)
 - [Blob Containers and Access Levels](02-BlobContainers.md)
 - [Real-World Use Cases](04-UseCases.md)
+- [Azure Tables](05-AzureTables.md)
+- [Python SDK Guide](07-PythonSDK.md)
+
+## Hands-On Practice
+
+- [Assignment 1: Azure File Shares](../Assignments/Assignment01-AzureFileShares.md) - Learn to create and mount file shares
+- [Assignment 2: Add Disk to VM](../Assignments/Assignment02-AddDiskToVM.md) - Add additional storage to VMs
