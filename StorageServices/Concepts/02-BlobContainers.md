@@ -332,7 +332,96 @@ sas_token = generate_account_sas(
 
 ---
 
-#### Method 3: Azure CLI
+#### Method 3: .NET SDK
+
+**NuGet Package**: `Azure.Storage.Blobs`
+
+```bash
+dotnet add package Azure.Storage.Blobs
+```
+
+**Blob-Level SAS**:
+```csharp
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+
+// Generate SAS token for a specific blob
+var blobClient = new BlobClient(
+    new Uri("https://mystorageacct.blob.core.windows.net/private-container/document.pdf"),
+    new StorageSharedKeyCredential("mystorageacct", "your-account-key")
+);
+
+var sasBuilder = new BlobSasBuilder
+{
+    BlobContainerName = "private-container",
+    BlobName = "document.pdf",
+    Resource = "b", // b = blob
+    StartsOn = DateTimeOffset.UtcNow,
+    ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+};
+
+sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+var sasToken = blobClient.GenerateSasUri(sasBuilder);
+Console.WriteLine($"SAS URL: {sasToken}");
+```
+
+**Container-Level SAS** (access to all blobs in container):
+```csharp
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+
+var containerClient = new BlobContainerClient(
+    new Uri("https://mystorageacct.blob.core.windows.net/private-container"),
+    new StorageSharedKeyCredential("mystorageacct", "your-account-key")
+);
+
+var sasBuilder = new BlobSasBuilder
+{
+    BlobContainerName = "private-container",
+    Resource = "c", // c = container
+    StartsOn = DateTimeOffset.UtcNow,
+    ExpiresOn = DateTimeOffset.UtcNow.AddHours(24)
+};
+
+sasBuilder.SetPermissions(BlobContainerSasPermissions.Read | 
+                          BlobContainerSasPermissions.Write | 
+                          BlobContainerSasPermissions.List);
+
+var sasUri = containerClient.GenerateSasUri(sasBuilder);
+Console.WriteLine($"Container SAS URL: {sasUri}");
+```
+
+**Account-Level SAS** (access to multiple services):
+```csharp
+using Azure.Storage;
+using Azure.Storage.Sas;
+
+var credential = new StorageSharedKeyCredential("mystorageacct", "your-account-key");
+
+var sasBuilder = new AccountSasBuilder
+{
+    Services = AccountSasServices.Blobs,
+    ResourceTypes = AccountSasResourceTypes.Service | 
+                    AccountSasResourceTypes.Container | 
+                    AccountSasResourceTypes.Object,
+    StartsOn = DateTimeOffset.UtcNow,
+    ExpiresOn = DateTimeOffset.UtcNow.AddDays(7),
+    Protocol = SasProtocol.Https
+};
+
+sasBuilder.SetPermissions(AccountSasPermissions.Read | 
+                          AccountSasPermissions.Write | 
+                          AccountSasPermissions.List);
+
+var sasToken = sasBuilder.ToSasQueryParameters(credential).ToString();
+var accountSasUrl = $"https://mystorageacct.blob.core.windows.net/?{sasToken}";
+Console.WriteLine($"Account SAS URL: {accountSasUrl}");
+```
+
+---
+
+#### Method 4: Azure CLI
 
 ```bash
 # Generate SAS token for a blob
@@ -404,6 +493,52 @@ def get_upload_url():
     })
 ```
 
+**Backend (ASP.NET Core Web API)**:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+
+[ApiController]
+[Route("api")]
+public class UploadController : ControllerBase
+{
+    [HttpPost("get-upload-url")]
+    public IActionResult GetUploadUrl()
+    {
+        // Generate unique blob name
+        var blobName = $"profile-pics/{Guid.NewGuid()}.jpg";
+        
+        // Create blob client
+        var blobClient = new BlobClient(
+            new Uri($"https://mystorageacct.blob.core.windows.net/user-uploads/{blobName}"),
+            new StorageSharedKeyCredential("mystorageacct", "your-account-key")
+        );
+        
+        // Generate SAS token with write permission (1 hour)
+        var sasBuilder = new BlobSasBuilder
+        {
+            BlobContainerName = "user-uploads",
+            BlobName = blobName,
+            Resource = "b",
+            StartsOn = DateTimeOffset.UtcNow,
+            ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+        };
+        
+        sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create);
+        
+        // Generate SAS URI
+        var sasUri = blobClient.GenerateSasUri(sasBuilder);
+        
+        return Ok(new
+        {
+            uploadUrl = sasUri.ToString(),
+            blobName = blobName
+        });
+    }
+}
+```
+
 **Frontend (JavaScript)**:
 ```javascript
 // Request upload URL from backend
@@ -443,6 +578,8 @@ async function uploadProfilePicture(file) {
 ### Security Best Practices
 
 #### 1. Use HTTPS Only
+
+**Python**:
 ```python
 # Always specify https_only=True
 sas_token = generate_blob_sas(
@@ -451,7 +588,18 @@ sas_token = generate_blob_sas(
 )
 ```
 
+**.NET**:
+```csharp
+var sasBuilder = new BlobSasBuilder
+{
+    // ... other properties
+    Protocol = SasProtocol.Https  // Only allow HTTPS
+};
+```
+
 #### 2. Set Minimal Permissions
+
+**Python**:
 ```python
 # ❌ Bad: Too many permissions
 permission=BlobSasPermissions(read=True, write=True, delete=True, list=True)
@@ -460,7 +608,19 @@ permission=BlobSasPermissions(read=True, write=True, delete=True, list=True)
 permission=BlobSasPermissions(read=True)  # Read-only
 ```
 
+**.NET**:
+```csharp
+// ❌ Bad: Too many permissions
+sasBuilder.SetPermissions(BlobSasPermissions.Read | BlobSasPermissions.Write | 
+                          BlobSasPermissions.Delete | BlobSasPermissions.List);
+
+// ✅ Good: Only what's needed
+sasBuilder.SetPermissions(BlobSasPermissions.Read);  // Read-only
+```
+
 #### 3. Use Short Expiry Times
+
+**Python**:
 ```python
 # ❌ Bad: 30 days
 expiry=datetime.utcnow() + timedelta(days=30)
@@ -469,7 +629,18 @@ expiry=datetime.utcnow() + timedelta(days=30)
 expiry=datetime.utcnow() + timedelta(hours=1)
 ```
 
+**.NET**:
+```csharp
+// ❌ Bad: 30 days
+ExpiresOn = DateTimeOffset.UtcNow.AddDays(30)
+
+// ✅ Good: 1 hour for uploads, 15 minutes for downloads
+ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+```
+
 #### 4. Restrict IP Addresses (when possible)
+
+**Python**:
 ```python
 from azure.storage.blob import generate_blob_sas
 
@@ -479,7 +650,20 @@ sas_token = generate_blob_sas(
 )
 ```
 
+**.NET**:
+```csharp
+using Azure.Storage.Sas;
+
+var sasBuilder = new BlobSasBuilder
+{
+    // ... other properties
+    IPRange = new SasIPRange(IPAddress.Parse("203.0.113.0"), IPAddress.Parse("203.0.113.255"))
+};
+```
+
 #### 5. Never Log or Expose SAS Tokens
+
+**Python**:
 ```python
 # ❌ Bad: Logging SAS tokens
 print(f"SAS Token: {sas_token}")  # Don't do this!
@@ -488,7 +672,18 @@ print(f"SAS Token: {sas_token}")  # Don't do this!
 print(f"Generated SAS for blob: {blob_name}, expires: {expiry}")
 ```
 
+**.NET**:
+```csharp
+// ❌ Bad: Logging SAS tokens
+Console.WriteLine($"SAS Token: {sasToken}");  // Don't do this!
+
+// ✅ Good: Log only metadata
+Console.WriteLine($"Generated SAS for blob: {blobName}, expires: {expiresOn}");
+```
+
 #### 6. Use User Delegation SAS (Most Secure)
+
+**Python**:
 ```python
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
@@ -509,6 +704,42 @@ user_delegation_key = blob_service.get_user_delegation_key(
 # This is more secure than account key-based SAS
 ```
 
+**.NET**:
+```csharp
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+
+// Use Azure AD credentials instead of account key
+var credential = new DefaultAzureCredential();
+var blobServiceClient = new BlobServiceClient(
+    new Uri("https://mystorageacct.blob.core.windows.net"),
+    credential
+);
+
+// Generate user delegation key (secured with Azure AD)
+var userDelegationKey = await blobServiceClient.GetUserDelegationKeyAsync(
+    startsOn: DateTimeOffset.UtcNow,
+    expiresOn: DateTimeOffset.UtcNow.AddHours(1)
+);
+
+// Create SAS using user delegation key
+var sasBuilder = new BlobSasBuilder
+{
+    BlobContainerName = "mycontainer",
+    BlobName = "myblob",
+    Resource = "b",
+    StartsOn = DateTimeOffset.UtcNow,
+    ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+};
+sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+var blobClient = blobServiceClient.GetBlobContainerClient("mycontainer").GetBlobClient("myblob");
+var sasUri = blobClient.GenerateSasUri(sasBuilder, userDelegationKey);
+
+// This is more secure than account key-based SAS
+```
+
 ---
 
 ### SAS Token Revocation
@@ -527,6 +758,8 @@ user_delegation_key = blob_service.get_user_delegation_key(
    > This will invalidate ALL SAS tokens generated with that key.
 
 2. **Use Stored Access Policies** (allows revocation):
+   
+   **Python**:
    ```python
    # Create stored access policy
    from azure.storage.blob import AccessPolicy, ContainerSasPermissions
@@ -551,6 +784,49 @@ user_delegation_key = blob_service.get_user_delegation_key(
    
    # Revoke by deleting policy
    container_client.set_container_access_policy(signed_identifiers={})
+   ```
+   
+   **.NET**:
+   ```csharp
+   using Azure.Storage.Blobs;
+   using Azure.Storage.Blobs.Models;
+   
+   var containerClient = new BlobContainerClient(
+       new Uri("https://mystorageacct.blob.core.windows.net/mycontainer"),
+       new StorageSharedKeyCredential("mystorageacct", "your-account-key")
+   );
+   
+   // Create stored access policy
+   var accessPolicy = new BlobSignedIdentifier
+   {
+       Id = "policy1",
+       AccessPolicy = new BlobAccessPolicy
+       {
+           PolicyStartsOn = DateTimeOffset.UtcNow,
+           PolicyExpiresOn = DateTimeOffset.UtcNow.AddDays(7),
+           Permissions = "r"  // Read permission
+       }
+   };
+   
+   // Set policy on container
+   await containerClient.SetAccessPolicyAsync(
+       permissions: new[] { accessPolicy }
+   );
+   
+   // Generate SAS using policy
+   var sasBuilder = new BlobSasBuilder
+   {
+       BlobContainerName = "mycontainer",
+       Resource = "c",
+       Identifier = "policy1"  // Reference to stored policy
+   };
+   
+   var sasToken = sasBuilder.ToSasQueryParameters(
+       new StorageSharedKeyCredential("mystorageacct", "your-account-key")
+   ).ToString();
+   
+   // Revoke by deleting policy
+   await containerClient.SetAccessPolicyAsync(permissions: Array.Empty<BlobSignedIdentifier>());
    ```
 
 3. **Use Short Expiry Times** (automatic expiration):
@@ -778,6 +1054,9 @@ Blob containers are the fundamental organizational unit in Azure Blob Storage. K
 2. **Enable data protection**: Use soft delete and versioning for critical data
 3. **Follow security best practices**: Default to private, use SAS tokens, audit public containers
 4. **Organize logically**: Use clear naming conventions and separate containers by purpose
+5. **Soft Delete for Containers**: Retains deleted containers for a specified retention period
+6. **Soft Delete for Blobs**: Retains deleted blobs for a specified retention period
+7. **Blob Versioning**: Automatically maintains previous versions of a blob
 
 **Remember**: Storage account-level public access must be enabled before container-level public access works.
 
@@ -809,90 +1088,6 @@ az storage container create \
 
 ---
 
-## Data Recovery Features
-
-### Soft Delete for Containers
-
-**What it does**: Retains deleted containers for a specified retention period
-
-**Benefits**:
-- Recover from accidental deletions
-- Protection against malicious deletion
-- Configurable retention period (1-365 days)
-
-**How to Enable**:
-1. Storage Account → **Data protection**
-2. Enable **"Container soft delete"**
-3. Set retention period (e.g., 7 days)
-
-**Recovery**:
-- Deleted containers appear with a "deleted" marker
-- Can be restored within the retention period
-- Original container name and contents are preserved
-
-**Use Cases**:
-- Protection against accidental deletion
-- Compliance requirements for data retention
-- Disaster recovery scenarios
-
----
-
-### Soft Delete for Blobs
-
-**What it does**: Retains deleted blobs and blob snapshots
-
-**Benefits**:
-- Recover individual files
-- Protection against overwrites
-- Snapshot preservation
-
-**Configuration**:
-- Retention period: 1-365 days
-- Applies to all blobs in the storage account
-
-**Recovery Process**:
-1. Navigate to container
-2. Enable **"Show deleted blobs"**
-3. Select deleted blob
-4. Click **Undelete**
-
----
-
-### Blob Versioning
-
-**What it does**: Automatically maintains previous versions of a blob
-
-**How it works**:
-- Each modification creates a new version
-- Previous versions are preserved
-- Each version has a unique version ID
-
-**Benefits**:
-- Complete history of blob changes
-- Rollback to any previous version
-- Protection against accidental overwrites
-- Audit trail for compliance
-
-**Use Cases**:
-- Document management systems
-- Configuration file management
-- Image processing workflows (preserve originals)
-- Compliance and regulatory requirements
-
-**Example Scenario**:
-A nightly script compresses product images. If the compression algorithm malfunctions, blob versioning allows you to immediately restore the original high-resolution images without needing separate backups.
-
-**Version Management**:
-```
-Current version: image.jpg (version ID: 2024-01-15T10:30:00Z)
-Previous version: image.jpg (version ID: 2024-01-14T09:15:00Z)
-Original version: image.jpg (version ID: 2024-01-10T08:00:00Z)
-```
-
-**Cost Consideration**: Each version consumes storage space. Use lifecycle policies to automatically delete old versions.
-
----
-
 ## Best Practices
 
 ### Security
@@ -920,61 +1115,6 @@ Original version: image.jpg (version ID: 2024-01-10T08:00:00Z)
 - **Use Versioning**: For critical data that changes frequently
 - **Regular Backups**: Even with redundancy, maintain backups for critical data
 - **Test Recovery**: Regularly test your ability to restore deleted data
-
----
-
-## Common Scenarios
-
-### Scenario 1: Public Website Assets
-
-**Requirement**: Serve images, CSS, and JavaScript files for a public website
-
-**Solution**:
-- Container: `website-assets`
-- Access Level: **Blob**
-- Why: Files need to be publicly accessible, but listing all assets is not necessary
-
-### Scenario 2: User File Uploads
-
-**Requirement**: Store files uploaded by authenticated users
-
-**Solution**:
-- Container: `user-uploads`
-- Access Level: **Private**
-- Access Method: Generate SAS tokens for authenticated users
-- Why: User data should never be publicly accessible
-
-### Scenario 3: Public Dataset Distribution
-
-**Requirement**: Share research data with the public
-
-**Solution**:
-- Container: `public-datasets`
-- Access Level: **Container**
-- Why: Users should be able to browse and discover available datasets
-
-### Scenario 4: Image Processing Pipeline
-
-**Requirement**: Vendors upload images, script processes them, website displays optimized versions
-
-**Solution**:
-- Container 1: `vendor-uploads` (Private) - Raw uploads
-- Container 2: `optimized-images` (Blob) - Processed images for website
-- Enable: Blob versioning on both containers
-- Why: Separate raw and processed data, protect originals, allow public access to optimized images
-
----
-
-## Summary
-
-Blob containers are the fundamental organizational unit in Azure Blob Storage. Key takeaways:
-
-1. **Choose the right access level**: Private for sensitive data, Blob for public assets, Container for public datasets
-2. **Enable data protection**: Use soft delete and versioning for critical data
-3. **Follow security best practices**: Default to private, use SAS tokens, audit public containers
-4. **Organize logically**: Use clear naming conventions and separate containers by purpose
-
-**Remember**: Storage account-level public access must be enabled before container-level public access works.
 
 ---
 

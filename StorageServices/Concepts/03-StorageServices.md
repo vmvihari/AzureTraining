@@ -285,9 +285,9 @@ Properties: {Name: "John Doe", Email: "john@example.com", Age: 30}
 - **Session State**: Web application session data
 - **Metadata Storage**: File metadata, indexing information
 
-### Working with Tables Using Python
+### Working with Tables
 
-**Example**:
+**Python Example**:
 ```python
 from azure.data.tables import TableServiceClient
 
@@ -310,6 +310,42 @@ table_client.create_entity(entity)
 entities = table_client.query_entities("PartitionKey eq 'USA'")
 for entity in entities:
     print(entity)
+```
+
+**.NET Example**:
+```csharp
+using Azure.Data.Tables;
+
+// Connect to table service
+var tableServiceClient = new TableServiceClient(connectionString);
+
+// Get table client
+var tableClient = tableServiceClient.GetTableClient("customers");
+
+// Define entity class
+public class CustomerEntity : ITableEntity
+{
+    public string PartitionKey { get; set; } = "USA";
+    public string RowKey { get; set; } = "12345";
+    public DateTimeOffset? Timestamp { get; set; }
+    public ETag ETag { get; set; }
+    public string Name { get; set; } = "John Doe";
+    public string Email { get; set; } = "john@example.com";
+}
+
+// Insert entity
+var entity = new CustomerEntity();
+await tableClient.AddEntityAsync(entity);
+
+// Query entities
+var entities = tableClient.QueryAsync<CustomerEntity>(
+    filter: $"PartitionKey eq 'USA'"
+);
+
+await foreach (var customer in entities)
+{
+    Console.WriteLine($"{customer.Name}: {customer.Email}");
+}
 ```
 
 ### Table Storage vs Cosmos DB

@@ -20,6 +20,7 @@ Dive deeper into specific Azure Storage concepts with these detailed guides:
 - **[05 - Azure Tables](Concepts/05-AzureTables.md)** - NoSQL key-value store for structured data
 - **[06 - Static Website Hosting](Concepts/06-StaticWebsiteHosting.md)** - Host static websites directly from Azure Storage
 - **[07 - Python SDK Guide](Concepts/07-PythonSDK.md)** - Programmatic access to Azure Storage with Python
+- **[08 - .NET SDK Guide](Concepts/08-DotNetSDK.md)** - Programmatic access to Azure Storage with C# and .NET
 
 ## Hands-On Labs
 
