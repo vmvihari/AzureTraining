@@ -30,7 +30,7 @@ This project builds **three isolated environments** (Dev, Test, Prod), each with
 | **Virtual Network** | `dev-vnet` | `test-vnet` | `prod-vnet` |
 | **Custom Image** | `devPackerImage` | `testPackerImage` | `prodPackerImage` |
 | **Software Stack** | Java, Python, NodeJS | JMeter, Selenium | Nginx, Apache |
-| **RBAC User** | `dev-user` (Contributor) | `test-user` (VM Contributor) | `prod-user` (Owner) |
+| **RBAC User** | `dev-user` (Contributor) | `test-user` (VM Contributor) | `prod-user` (Contributor) |
 
 **Network Peering**: Enabled only between Dev ↔ Test networks
 
@@ -136,7 +136,7 @@ az group create --name prod-rg --location westus
 |---------------------|--------------|-----------------|
 | `dev-user@yourdomain.com` | Dev User | Contributor on `dev-rg` |
 | `test-user@yourdomain.com` | Test User | Virtual Machine Contributor on `test-rg` |
-| `prod-user@yourdomain.com` | Prod User | Owner on `prod-rg` |
+| `prod-user@yourdomain.com` | Prod User | Contributor on `prod-rg` |
 
 3. Set initial passwords and note them down
 
@@ -155,11 +155,35 @@ az group create --name prod-rg --location westus
 3. Assign to `test-user`
 
 **For prod-user (Owner on prod-rg):**
-1. Go to **Resource groups** → **prod-rg** → **Access control (IAM)**
-2. Select **Owner** role
-3. Assign to `prod-user`
 
-#### Using Azure CLI:
+> **⚠️ IMPORTANT**: Azure now requires **conditions** for privileged roles like Owner due to security policies. You have two options:
+
+**Option 1: Use Contributor Role (Recommended for Learning)**
+1. Go to **Resource groups** → **prod-rg** → **Access control (IAM)**
+2. Click **+ Add** → **Add role assignment**
+3. Select **Contributor** role → **Next**
+4. Click **+ Select members** → Search for `prod-user` → **Select**
+5. Click **Review + assign**
+
+**Option 2: Assign Owner Role with Azure CLI (Advanced)**
+
+If you specifically need Owner permissions, use Azure CLI which handles conditions automatically:
+
+```bash
+# Get prod-user object ID
+PROD_USER_ID=$(az ad user show --id prod-user@yourdomain.com --query id -o tsv)
+
+# Assign Owner role (Azure CLI handles conditions)
+az role assignment create \
+  --assignee $PROD_USER_ID \
+  --role "Owner" \
+  --resource-group prod-rg \
+  --description "Owner access for prod environment"
+```
+
+> **📝 Note**: For this learning project, **Contributor** role provides sufficient permissions. The difference is that Owner can also manage RBAC assignments, which isn't necessary for this project.
+
+#### Using Azure CLI (All Users):
 
 ```bash
 # Get user object IDs
@@ -170,7 +194,8 @@ PROD_USER_ID=$(az ad user show --id prod-user@yourdomain.com --query id -o tsv)
 # Assign roles
 az role assignment create --assignee $DEV_USER_ID --role "Contributor" --resource-group dev-rg
 az role assignment create --assignee $TEST_USER_ID --role "Virtual Machine Contributor" --resource-group test-rg
-az role assignment create --assignee $PROD_USER_ID --role "Owner" --resource-group prod-rg
+az role assignment create --assignee $PROD_USER_ID --role "Contributor" --resource-group prod-rg
+# Note: Changed to Contributor for prod-user to avoid condition requirements
 ```
 
 ---
@@ -731,6 +756,42 @@ apache2 -v
 ---
 
 ## Troubleshooting
+
+### Owner Role Assignment Error
+
+**Error**: `A condition is required for restricted delegation` when assigning Owner role to prod-user
+
+**Cause**: Azure now enforces security policies requiring conditions for privileged roles like Owner, User Access Administrator, and Role Based Access Control Administrator.
+
+**Solutions**:
+
+**Solution 1: Use Contributor Role (Recommended)**
+```bash
+# Assign Contributor instead of Owner
+PROD_USER_ID=$(az ad user show --id prod-user@yourdomain.com --query id -o tsv)
+az role assignment create --assignee $PROD_USER_ID --role "Contributor" --resource-group prod-rg
+```
+
+**Solution 2: Use Azure CLI for Owner Role**
+```bash
+# Azure CLI handles conditions automatically
+PROD_USER_ID=$(az ad user show --id prod-user@yourdomain.com --query id -o tsv)
+az role assignment create \
+  --assignee $PROD_USER_ID \
+  --role "Owner" \
+  --resource-group prod-rg \
+  --description "Owner access for prod environment"
+```
+
+**Solution 3: Add Condition via Portal (Advanced)**
+1. Go to **prod-rg** → **Access control (IAM)** → **Add role assignment**
+2. Select **Owner** role → **Next**
+3. Select **prod-user** → **Next**
+4. On the **Conditions** tab, click **Add condition**
+5. Use a simple condition like: `@Request[Microsoft.Authorization/roleAssignments:PrincipalType] StringEquals 'User'`
+6. Click **Review + assign**
+
+> **💡 Tip**: For learning purposes, Contributor role is sufficient. The main difference is that Owner can manage RBAC assignments, which isn't needed for this project.
 
 ### Packer Build Fails
 
