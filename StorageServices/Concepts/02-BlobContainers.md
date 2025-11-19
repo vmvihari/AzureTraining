@@ -177,6 +177,400 @@ https://mystorageacct.blob.core.windows.net/public-data?restype=container&comp=l
 
 ---
 
+## Shared Access Signatures (SAS)
+
+### What is a SAS Token?
+
+**Definition**: A Shared Access Signature (SAS) is a URI that grants restricted access rights to Azure Storage resources without exposing your account key.
+
+**Key Characteristics**:
+- Time-limited access (specify start and expiry times)
+- Granular permissions (read, write, delete, list)
+- IP address restrictions (optional)
+- Protocol restrictions (HTTPS only, optional)
+- Can be revoked by changing account keys
+- Safer than sharing account keys
+
+### When to Use SAS Tokens
+
+**Use SAS Tokens When**:
+- ✅ Providing temporary access to private containers
+- ✅ Granting access to external users or applications
+- ✅ Mobile or web applications need to access storage
+- ✅ Third-party integrations require limited access
+- ✅ You need to restrict permissions (read-only, write-only)
+- ✅ You want time-limited access that expires automatically
+
+**Don't Use SAS Tokens When**:
+- ❌ You can use managed identities (for Azure resources)
+- ❌ Access is needed indefinitely (use RBAC instead)
+- ❌ You need to frequently rotate tokens (management overhead)
+
+---
+
+### SAS Token vs Access Levels
+
+> [!IMPORTANT]
+> SAS tokens and container access levels serve different purposes and can be used together.
+
+**Container Access Levels**: Control anonymous (public) access
+- Private: No anonymous access
+- Blob: Anonymous read access to blobs
+- Container: Anonymous read access to blobs and container listing
+
+**SAS Tokens**: Provide authenticated, time-limited access
+- Work with **any** access level (including Private)
+- Require authentication (not anonymous)
+- Can grant write, delete, and list permissions
+- Can be scoped to specific blobs or containers
+
+**Example Scenario**:
+```
+Container: "user-uploads" (Access Level: Private)
+SAS Token: Grants read/write access for 1 hour to a specific user
+
+Result: User can upload/download files for 1 hour, 
+        but anonymous users still cannot access anything
+```
+
+---
+
+### How SAS Tokens Work
+
+**URL Format**:
+```
+https://<storage-account>.blob.core.windows.net/<container>/<blob>?<sas-token>
+```
+
+**Example**:
+```
+https://mystorageacct.blob.core.windows.net/private-docs/report.pdf?sv=2021-06-08&ss=b&srt=o&sp=r&se=2024-01-15T18:00:00Z&st=2024-01-15T10:00:00Z&spr=https&sig=abc123...
+```
+
+**SAS Token Parameters**:
+- `sv` - Storage service version
+- `ss` - Storage service (b=blob, t=table, q=queue, f=file)
+- `srt` - Resource type (s=service, c=container, o=object)
+- `sp` - Permissions (r=read, w=write, d=delete, l=list, a=add, c=create, u=update, p=process)
+- `se` - Expiry time (UTC)
+- `st` - Start time (UTC, optional)
+- `spr` - Protocol (https or https,http)
+- `sig` - Signature (cryptographic hash)
+
+> [!NOTE]
+> The question mark (`?`) separates the blob URL from the SAS token parameters. This is how Azure knows where the token begins.
+
+---
+
+### Generating SAS Tokens
+
+#### Method 1: Azure Portal
+
+**Steps**:
+1. Navigate to Storage Account → **Containers**
+2. Select a container or blob
+3. Right-click → **Generate SAS**
+4. Configure:
+   - **Permissions**: Read, Write, Delete, List
+   - **Start time**: Now (or future date)
+   - **Expiry time**: When access should end
+   - **Allowed IP addresses**: Optional restriction
+   - **Allowed protocols**: HTTPS only (recommended)
+5. Click **Generate SAS token and URL**
+6. Copy the **Blob SAS URL** or **Blob SAS token**
+
+---
+
+#### Method 2: Python SDK
+
+```python
+from azure.storage.blob import generate_blob_sas, BlobSasPermissions
+from datetime import datetime, timedelta
+
+# Generate SAS token for a specific blob
+sas_token = generate_blob_sas(
+    account_name="mystorageacct",
+    container_name="private-container",
+    blob_name="document.pdf",
+    account_key="your-account-key",
+    permission=BlobSasPermissions(read=True),
+    expiry=datetime.utcnow() + timedelta(hours=1)
+)
+
+# Construct full URL
+blob_url = f"https://mystorageacct.blob.core.windows.net/private-container/document.pdf?{sas_token}"
+print(f"SAS URL: {blob_url}")
+```
+
+**Container-Level SAS** (access to all blobs in container):
+```python
+from azure.storage.blob import generate_container_sas, ContainerSasPermissions
+
+sas_token = generate_container_sas(
+    account_name="mystorageacct",
+    container_name="private-container",
+    account_key="your-account-key",
+    permission=ContainerSasPermissions(read=True, write=True, list=True),
+    expiry=datetime.utcnow() + timedelta(hours=24)
+)
+
+container_url = f"https://mystorageacct.blob.core.windows.net/private-container?{sas_token}"
+```
+
+**Account-Level SAS** (access to multiple services):
+```python
+from azure.storage.blob import generate_account_sas, ResourceTypes, AccountSasPermissions
+
+sas_token = generate_account_sas(
+    account_name="mystorageacct",
+    account_key="your-account-key",
+    resource_types=ResourceTypes(service=True, container=True, object=True),
+    permission=AccountSasPermissions(read=True, write=True, list=True),
+    expiry=datetime.utcnow() + timedelta(days=7)
+)
+```
+
+---
+
+#### Method 3: Azure CLI
+
+```bash
+# Generate SAS token for a blob
+az storage blob generate-sas \
+  --account-name mystorageacct \
+  --container-name private-container \
+  --name document.pdf \
+  --permissions r \
+  --expiry 2024-01-15T18:00:00Z \
+  --https-only \
+  --output tsv
+
+# Generate SAS token for a container
+az storage container generate-sas \
+  --account-name mystorageacct \
+  --name private-container \
+  --permissions rl \
+  --expiry 2024-01-15T18:00:00Z \
+  --https-only \
+  --output tsv
+```
+
+---
+
+### Real-World Use Case: Frontend Image Upload
+
+**Scenario**: A web application allows users to upload profile pictures to a private container.
+
+**Architecture**:
+```mermaid
+graph LR
+    A[User Browser] -->|Request Upload| B[Backend API]
+    B -->|Generate SAS Token| C[Azure Storage]
+    B -->|Return SAS URL| A
+    A -->|Upload Image| C
+    C -->|Store| D[Private Container]
+```
+
+**Backend (Python/Flask)**:
+```python
+from flask import Flask, jsonify
+from azure.storage.blob import generate_blob_sas, BlobSasPermissions
+from datetime import datetime, timedelta
+import uuid
+
+app = Flask(__name__)
+
+@app.route('/get-upload-url', methods=['POST'])
+def get_upload_url():
+    # Generate unique blob name
+    blob_name = f"profile-pics/{uuid.uuid4()}.jpg"
+    
+    # Generate SAS token with write permission (1 hour)
+    sas_token = generate_blob_sas(
+        account_name="mystorageacct",
+        container_name="user-uploads",
+        blob_name=blob_name,
+        account_key="your-account-key",
+        permission=BlobSasPermissions(write=True, create=True),
+        expiry=datetime.utcnow() + timedelta(hours=1)
+    )
+    
+    # Return SAS URL to frontend
+    upload_url = f"https://mystorageacct.blob.core.windows.net/user-uploads/{blob_name}?{sas_token}"
+    
+    return jsonify({
+        "uploadUrl": upload_url,
+        "blobName": blob_name
+    })
+```
+
+**Frontend (JavaScript)**:
+```javascript
+// Request upload URL from backend
+async function uploadProfilePicture(file) {
+    // Get SAS URL from backend
+    const response = await fetch('/get-upload-url', { method: 'POST' });
+    const { uploadUrl, blobName } = await response.json();
+    
+    // Upload directly to Azure Storage using SAS URL
+    const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+            'x-ms-blob-type': 'BlockBlob',
+            'Content-Type': file.type
+        },
+        body: file
+    });
+    
+    if (uploadResponse.ok) {
+        console.log('Upload successful!');
+        return blobName;
+    } else {
+        throw new Error('Upload failed');
+    }
+}
+```
+
+**Benefits**:
+- ✅ Frontend uploads directly to Azure (no backend bottleneck)
+- ✅ Backend doesn't handle large file transfers
+- ✅ Time-limited access (token expires in 1 hour)
+- ✅ Write-only permission (user can't read other users' files)
+- ✅ Account key never exposed to frontend
+
+---
+
+### Security Best Practices
+
+#### 1. Use HTTPS Only
+```python
+# Always specify https_only=True
+sas_token = generate_blob_sas(
+    # ... other parameters
+    protocol="https"  # Only allow HTTPS
+)
+```
+
+#### 2. Set Minimal Permissions
+```python
+# ❌ Bad: Too many permissions
+permission=BlobSasPermissions(read=True, write=True, delete=True, list=True)
+
+# ✅ Good: Only what's needed
+permission=BlobSasPermissions(read=True)  # Read-only
+```
+
+#### 3. Use Short Expiry Times
+```python
+# ❌ Bad: 30 days
+expiry=datetime.utcnow() + timedelta(days=30)
+
+# ✅ Good: 1 hour for uploads, 15 minutes for downloads
+expiry=datetime.utcnow() + timedelta(hours=1)
+```
+
+#### 4. Restrict IP Addresses (when possible)
+```python
+from azure.storage.blob import generate_blob_sas
+
+sas_token = generate_blob_sas(
+    # ... other parameters
+    ip="203.0.113.0/24"  # Only allow from this IP range
+)
+```
+
+#### 5. Never Log or Expose SAS Tokens
+```python
+# ❌ Bad: Logging SAS tokens
+print(f"SAS Token: {sas_token}")  # Don't do this!
+
+# ✅ Good: Log only metadata
+print(f"Generated SAS for blob: {blob_name}, expires: {expiry}")
+```
+
+#### 6. Use User Delegation SAS (Most Secure)
+```python
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
+
+# Use Azure AD credentials instead of account key
+credential = DefaultAzureCredential()
+blob_service = BlobServiceClient(
+    account_url="https://mystorageacct.blob.core.windows.net",
+    credential=credential
+)
+
+# Generate user delegation SAS (secured with Azure AD)
+user_delegation_key = blob_service.get_user_delegation_key(
+    key_start_time=datetime.utcnow(),
+    key_expiry_time=datetime.utcnow() + timedelta(hours=1)
+)
+
+# This is more secure than account key-based SAS
+```
+
+---
+
+### SAS Token Revocation
+
+**Problem**: SAS tokens cannot be directly revoked once generated.
+
+**Solutions**:
+
+1. **Rotate Account Keys** (revokes all SAS tokens):
+   ```bash
+   az storage account keys renew \
+     --account-name mystorageacct \
+     --key primary
+   ```
+   > [!WARNING]
+   > This will invalidate ALL SAS tokens generated with that key.
+
+2. **Use Stored Access Policies** (allows revocation):
+   ```python
+   # Create stored access policy
+   from azure.storage.blob import AccessPolicy, ContainerSasPermissions
+   
+   access_policy = AccessPolicy(
+       permission=ContainerSasPermissions(read=True),
+       expiry=datetime.utcnow() + timedelta(days=7)
+   )
+   
+   # Set policy on container
+   container_client.set_container_access_policy(
+       signed_identifiers={'policy1': access_policy}
+   )
+   
+   # Generate SAS using policy
+   sas_token = generate_container_sas(
+       account_name="mystorageacct",
+       container_name="mycontainer",
+       account_key="key",
+       policy_id="policy1"  # Reference to stored policy
+   )
+   
+   # Revoke by deleting policy
+   container_client.set_container_access_policy(signed_identifiers={})
+   ```
+
+3. **Use Short Expiry Times** (automatic expiration):
+   - Best practice: 15 minutes to 1 hour for most use cases
+
+---
+
+### SAS Token Comparison
+
+| Feature | Blob SAS | Container SAS | Account SAS | User Delegation SAS |
+|---------|----------|---------------|-------------|---------------------|
+| **Scope** | Single blob | All blobs in container | Multiple services | Blob/Container |
+| **Permissions** | Granular | Granular | Granular | Granular |
+| **Security** | Medium | Medium | Lower | Highest |
+| **Based on** | Account key | Account key | Account key | Azure AD |
+| **Revocation** | Rotate key | Rotate key | Rotate key | Revoke delegation key |
+| **Best for** | Specific file access | Container operations | Multi-service access | Production apps |
+
+---
+
 ## Enabling Public Access
 
 ### Step 1: Enable at Storage Account Level
