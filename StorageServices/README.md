@@ -38,6 +38,21 @@ Learn how to create and configure Azure Storage Accounts, work with blob contain
 - Test and validate anonymous access behavior
 - Apply real-world scenarios for image processing workflows
 
+---
+
+### [Lab 02: Azure Table Storage - Hands-On Practice](Labs/Lab02-AzureTables.md)
+**Duration**: 45-60 minutes | **Difficulty**: Beginner
+
+Learn how to work with Azure Table Storage, a NoSQL key-value store for structured data. Create tables, insert data manually and programmatically using Python.
+
+**What you'll learn:**
+- Create and configure Azure Storage Account with Table service
+- Understand Azure Table entities (PartitionKey, RowKey, properties)
+- Manually insert data using the Azure Portal
+- Generate and use SAS tokens for secure access
+- Install Azure Data Tables SDK for Python
+- Programmatically create and insert entities using Python
+
 ## Assignments
 
 Practice essential Azure storage operations with these hands-on assignments:
