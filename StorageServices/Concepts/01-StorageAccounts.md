@@ -73,6 +73,13 @@ Azure Storage offers two performance tiers to match different workload requireme
 #### Premium File Shares
 - Enterprise-grade file shares
 - SMB and NFS protocol support
+  - **Server Message Block (SMB)**: A network protocol enabling computers to share files, printers, and other resources over a network
+    - **How it works**: Client computers request access to resources on a server, which responds to enable seamless access to files as if they were stored locally
+    - **Usage**: Commonly used in Windows environments, with support across macOS, Linux, and Android
+  - **Network File System (NFS)**: A client-server protocol that allows users on one computer to access files stored on another computer over a network
+    - **How it works**: Clients make requests to an NFS server using Remote Procedure Calls (RPC) to read, write, or modify files. The server verifies file existence and client permissions before granting access
+    - **Origins**: Originally developed by Sun Microsystems in 1984, now an open standard with various versions (NFSv4 being the most recent)
+    - **Usage**: Popular in Unix-based systems including Linux, with support on other platforms like Windows Server for cross-platform interoperability
 - Use cases: Lift-and-shift applications, databases
 
 #### Premium Page Blobs
@@ -100,114 +107,15 @@ Azure Storage offers two performance tiers to match different workload requireme
 
 Redundancy ensures your data is protected against hardware failures, datacenter outages, and regional disasters.
 
-### Local Redundancy Storage (LRS)
+| Redundancy Type | How It Works | Protection Level | Durability | Use Cases | Special Notes |
+|-----------------|--------------|------------------|------------|-----------|---------------|
+| **LRS**<br>(Local Redundancy Storage) | • Replicates data **3 times** within a single datacenter<br>• All copies stored in the same physical location | ✅ Protects against server rack and drive failures<br>❌ Does NOT protect against datacenter-level disasters | 99.999999999%<br>(11 nines) | • Non-critical data<br>• Data that can be easily reconstructed<br>• Cost-sensitive scenarios<br>• Development and testing | **Cost**: Lowest redundancy option |
+| **ZRS**<br>(Zone-Redundant Storage) | • Replicates data across **3 availability zones** in the same region<br>• Each zone is a separate physical location with independent power, cooling, and networking | ✅ Protects against datacenter failures<br>❌ Does NOT protect against regional disasters | 99.9999999999%<br>(12 nines) | • High availability requirements<br>• Mission-critical applications<br>• Compliance requirements for data residency | **Availability**: Not available in all regions |
+| **GRS**<br>(Geo-Redundant Storage) | • Combines LRS in primary region with LRS in a secondary region<br>• Data replicated to a paired region **hundreds of miles away**<br>• Secondary region data is **not accessible** for read unless failover occurs | ✅ Protects against regional disasters<br>✅ Highest level of durability | 99.99999999999999%<br>(16 nines) | • Business-critical data<br>• Disaster recovery requirements<br>• Long-term data retention<br>• Compliance and regulatory requirements | **Failover**: Manual or Microsoft-managed failover to secondary region |
+| **RA-GRS**<br>(Read-Access Geo-Redundant Storage) | • Same as GRS, but with **read access** to the secondary region<br>• Applications can read from secondary region even without failover | • Same as GRS<br>• Additional benefit of read availability during primary region outage | 99.99999999999999%<br>(16 nines) | • Applications requiring high read availability<br>• Global content distribution<br>• Disaster recovery with minimal downtime | **Endpoints**:<br>• Primary: `https://mystorageacct.blob.core.windows.net`<br>• Secondary: `https://mystorageacct-secondary.blob.core.windows.net` |
+| **GZRS**<br>(Geo-Zone-Redundant Storage) | • Combines ZRS in primary region with LRS in secondary region<br>• Best of both: zone redundancy + geo redundancy | ✅ Protects against zone failures<br>✅ Protects against regional disasters | 99.99999999999999%<br>(16 nines) | • Maximum availability and durability<br>• Critical workloads requiring both zone and geo protection | **Also Available**: RA-GZRS (with read access to secondary) |
 
-**How it works**:
-- Replicates data **3 times** within a single datacenter
-- All copies stored in the same physical location
-
-**Protection Level**:
-- ✅ Protects against server rack and drive failures
-- ❌ Does NOT protect against datacenter-level disasters
-
-**Durability**: 99.999999999% (11 nines) over a year
-
-**Use Cases**:
-- Non-critical data
-- Data that can be easily reconstructed
-- Cost-sensitive scenarios
-- Development and testing
-
-**Cost**: Lowest redundancy option
-
----
-
-### Zone-Redundant Storage (ZRS)
-
-**How it works**:
-- Replicates data across **3 availability zones** in the same region
-- Each zone is a separate physical location with independent power, cooling, and networking
-
-**Protection Level**:
-- ✅ Protects against datacenter failures
-- ❌ Does NOT protect against regional disasters
-
-**Durability**: 99.9999999999% (12 nines) over a year
-
-**Use Cases**:
-- High availability requirements
-- Mission-critical applications
-- Compliance requirements for data residency
-
-**Availability**: Not available in all regions
-
----
-
-### Geo-Redundant Storage (GRS)
-
-**How it works**:
-- Combines LRS in primary region with LRS in a secondary region
-- Data replicated to a paired region **hundreds of miles away**
-- Secondary region data is **not accessible** for read unless failover occurs
-
-**Protection Level**:
-- ✅ Protects against regional disasters
-- ✅ Highest level of durability
-
-**Durability**: 99.99999999999999% (16 nines) over a year
-
-**Use Cases**:
-- Business-critical data
-- Disaster recovery requirements
-- Long-term data retention
-- Compliance and regulatory requirements
-
-**Failover**: Manual or Microsoft-managed failover to secondary region
-
----
-
-### Read-Access Geo-Redundant Storage (RA-GRS)
-
-**How it works**:
-- Same as GRS, but with **read access** to the secondary region
-- Applications can read from secondary region even without failover
-
-**Protection Level**:
-- Same as GRS
-- Additional benefit of read availability during primary region outage
-
-**Use Cases**:
-- Applications requiring high read availability
-- Global content distribution
-- Disaster recovery with minimal downtime
-
-**Endpoints**:
-- Primary: `https://mystorageacct.blob.core.windows.net`
-- Secondary: `https://mystorageacct-secondary.blob.core.windows.net`
-
----
-
-### Geo-Zone-Redundant Storage (GZRS)
-
-**How it works**:
-- Combines ZRS in primary region with LRS in secondary region
-- Best of both: zone redundancy + geo redundancy
-
-**Protection Level**:
-- ✅ Protects against zone failures
-- ✅ Protects against regional disasters
-
-**Durability**: 99.99999999999999% (16 nines) over a year
-
-**Use Cases**:
-- Maximum availability and durability
-- Critical workloads requiring both zone and geo protection
-
-**Also Available**: RA-GZRS (with read access to secondary)
-
----
-
-### Redundancy Comparison Table
+### Quick Comparison
 
 | Redundancy | Copies | Locations | Protects Against | Durability (9s) | Relative Cost |
 |------------|--------|-----------|------------------|-----------------|---------------|
@@ -226,39 +134,12 @@ Redundancy ensures your data is protected against hardware failures, datacenter 
 
 Data access tiers optimize storage costs based on how frequently you access your data.
 
-#### Hot Tier
-- **Use Case**: Frequently accessed data
-- **Characteristics**: Higher storage cost, lower access cost
-- **Examples**: Active website images, application data, streaming content
-- **Ideal For**: Data accessed multiple times per day
-
-#### Cool Tier
-- **Use Case**: Infrequently accessed data (stored for at least 30 days)
-- **Characteristics**: Lower storage cost, higher access cost
-- **Examples**: Short-term backups, older media files
-- **Ideal For**: Data accessed a few times per month
-
-#### Cold Tier
-- **Use Case**: Rarely accessed data (stored for at least 90 days)
-- **Characteristics**: Even lower storage cost, higher access cost than Cool
-- **Examples**: Long-term backups, compliance archives
-- **Ideal For**: Data accessed a few times per year
-
-#### Archive Tier
-- **Use Case**: Long-term archival (stored for at least 180 days)
-- **Characteristics**: Lowest storage cost, highest access cost
-- **Rehydration Required**: Must rehydrate to Hot/Cool before accessing (hours)
-- **Examples**: Legal archives, historical records, compliance data
-- **Ideal For**: Data rarely or never accessed
-
-**Access Tier Comparison**:
-
-| Tier | Storage Cost | Access Cost | Minimum Storage | Retrieval Time |
-|------|--------------|-------------|-----------------|----------------|
-| Hot | Highest | Lowest | None | Immediate |
-| Cool | Lower | Higher | 30 days | Immediate |
-| Cold | Even Lower | Even Higher | 90 days | Immediate |
-| Archive | Lowest | Highest | 180 days | Hours (rehydration) |
+| Tier | Use Case | Characteristics | Examples | Ideal For | Storage Cost | Access Cost | Minimum Storage | Retrieval Time |
+|------|----------|-----------------|----------|-----------|--------------|-------------|-----------------|----------------|
+| **Hot** | Frequently accessed data | Higher storage cost, lower access cost | • Active website images<br>• Application data<br>• Streaming content | Data accessed multiple times per day | Highest | Lowest | None | Immediate |
+| **Cool** | Infrequently accessed data | Lower storage cost, higher access cost | • Short-term backups<br>• Older media files | Data accessed a few times per month | Lower | Higher | 30 days | Immediate |
+| **Cold** | Rarely accessed data | Even lower storage cost, higher access cost than Cool | • Long-term backups<br>• Compliance archives | Data accessed a few times per year | Even Lower | Even Higher | 90 days | Immediate |
+| **Archive** | Long-term archival | Lowest storage cost, highest access cost<br>**Rehydration Required**: Must rehydrate to Hot/Cool before accessing | • Legal archives<br>• Historical records<br>• Compliance data | Data rarely or never accessed | Lowest | Highest | 180 days | Hours (rehydration) |
 
 ---
 
