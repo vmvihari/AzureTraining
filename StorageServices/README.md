@@ -77,3 +77,24 @@ Learn how to add additional data disks to Azure VMs. Covers disk performance tie
 Learn how to expand existing disks when running out of space. Covers snapshot creation, Azure disk expansion, partition extension on Windows and Linux, and troubleshooting common issues.
 
 ---
+
+### [Assignment 1: Azure File Shares (Linux)](Assignments/Assignment01-Linux-AzureFileShares.md)
+**Topics**: Mounting Azure File Shares on Linux, CIFS utils, /etc/fstab persistence
+
+Learn how to mount Azure File Shares on Linux VMs using the CIFS protocol and ensure mounts persist after reboots.
+
+---
+
+### [Assignment 2: Add Additional Disk to Existing VM (Linux)](Assignments/Assignment02-Linux-AddDiskToVM.md)
+**Topics**: Disk attachment, partitioning (parted), formatting (mkfs), mounting
+
+Learn how to add, partition, format, and mount additional data disks on Linux VMs.
+
+---
+
+### [Assignment 3: Extend Storage of Attached Disk (Linux)](Assignments/Assignment03-Linux-ExtendDiskStorage.md)
+**Topics**: Disk expansion, partition resizing, filesystem resizing (resize2fs, xfs_growfs)
+
+Learn how to expand existing disks and resize partitions and filesystems on Linux VMs without data loss.
+
+---

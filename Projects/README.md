@@ -24,6 +24,31 @@ This directory contains hands-on Azure projects that demonstrate practical imple
 
 **Difficulty**: Intermediate
 
+**Difficulty**: Intermediate
+
+---
+
+### [Project 3: Azure Python-Based Storage Management Web Application](./Project3-Python-Storage-WebApp/README.md)
+
+**Objective**: Build a serverless Python web application on Azure App Service that integrates with multiple storage services (Blob, Table, File Share).
+
+**Key Concepts Covered**:
+- Azure App Service (Linux) deployment
+- Azure Storage Services integration (Blob, Table, File Share)
+- SAS Token generation and usage
+- Python Flask application development
+- Azure Cloud Shell usage
+
+**Technologies Used**:
+- Python (Flask)
+- Azure App Service
+- Azure Blob Storage
+- Azure Table Storage
+- Azure File Share
+- Azure Cloud Shell
+
+**Difficulty**: Intermediate
+
 ---
 
 ## Project Structure
