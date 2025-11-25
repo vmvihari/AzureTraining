@@ -180,11 +180,10 @@ az login --use-device-code
 Run the deployment command:
 ```bash
 az webapp up \
-  --name luckywebapp48717 \
+  --name lucky-webapp-18454 \
   --resource-group lucky \
-  --plan ASP-lucky-883d \
-  --sku P0v3 \
-  --runtime "PYTHON:3.12" \
+  --sku B1 \
+  --runtime "PYTHON:3.14" \
   --os-type Linux \
   --location canadacentral
 ```
@@ -221,6 +220,6 @@ Cleaned & Ordered Command History:
 10 pip freeze > requirements.txt
 11 python3 app.py
 12 az login --use-device-code
-13 az webapp up --name luckywebapp48717 --resource-group lucky --plan ASP-lucky-883d --sku P0v3 --runtime "PYTHON:3.12" --os-type Linux --location canadacentral
+13 az webapp up --name lucky-webapp-18454 --resource-group lucky --sku B1 --runtime "PYTHON:3.14" --os-type Linux --location canadacentral
 14 history
 ```
