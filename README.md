@@ -8,6 +8,7 @@ Welcome to the Azure Training repository! This repository contains comprehensive
 - [Networking Services](./NetworkingServices/README.md)
 - [Storage Services](./StorageServices/README.md)
 - [Firewall & Network Security](./Firewall/README.md)
+- [Backup and Recovery](./BackupAndRecovery/README.md)
 
 ### 🚀 Hands-On Projects
 - [Projects](./Projects/README.md) - Practical Azure implementation projects
