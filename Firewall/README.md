@@ -2,15 +2,17 @@
 
 This module covers the implementation of secure network architectures in Azure, focusing on the Hub and Spoke model, Azure Firewall, and traffic management.
 
-## Concepts
+## Table of Contents
 
-| Concept | Description |
-|---------|-------------|
-| [Hub and Spoke Architecture](./Concepts/01-HubAndSpokeArchitecture.md) | Centralized network topology for managing common services and security. |
-| [Azure Firewall](./Concepts/02-AzureFirewall.md) | Managed, cloud-based network security service that protects your Azure Virtual Network resources. |
-| [Azure Bastion](./Concepts/03-AzureBastion.md) | Secure and seamless RDP/SSH connectivity to your virtual machines. |
-| [Routing and Peering](./Concepts/04-RoutingAndPeering.md) | Managing traffic flow between VNets and through the Firewall using User Defined Routes (UDR). |
-| [Network Security Groups](./Concepts/05-NetworkSecurityGroups.md) | Filtering network traffic to and from Azure resources in an Azure virtual network. |
+### Concepts
+- [Hub and Spoke Architecture](./Concepts/01-HubAndSpokeArchitecture.md)
+- [Azure Firewall](./Concepts/02-AzureFirewall.md)
+- [Azure Bastion](./Concepts/03-AzureBastion.md)
+- [Routing and Peering](./Concepts/04-RoutingAndPeering.md)
+- [Network Security Groups](./Concepts/05-NetworkSecurityGroups.md)
+
+### Labs
+- [Lab 1: Azure Firewall - Hub and Spoke Architecture](./Labs/Lab01-AzureFirewall.md)
 
 ## Key Takeaways
 - **Hub & Spoke**: The standard for enterprise network topology in Azure.
