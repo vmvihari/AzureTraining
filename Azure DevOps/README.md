@@ -17,3 +17,4 @@ This section covers the concepts and implementation details for Azure DevOps, in
 
 ## Labs
 - [Git Homework](Labs/01-GitHomework.md)
+- [ARM Templates (Process)](Labs/02-ARMTemplates.md)
