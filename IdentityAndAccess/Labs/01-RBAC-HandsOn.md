@@ -53,7 +53,15 @@ Create users, validate authentication vs authorization behavior, and implement l
 You will create a custom role in Azure RBAC (subscription or resource group scope).
 
 #### 5A) Prepare Role Definition (JSON)
-Create a file named `StartStopRestartVMRole.json`. Use this template (edit placeholders like subscription ID and scope):
+1. **Get your Subscription ID**:
+   Run this command in Cloud Shell to see your ID:
+   ```bash
+   az account show --query id -o tsv
+   ```
+   *Copy this ID, you will need it in the next step.*
+
+2. Create a file named `StartStopRestartVMRole.json`.
+3. Use the template below, but **YOU MUST REPLACE** `<SUBSCRIPTION_ID>` with the actual ID you just copied.
 
 ```json
 {
@@ -70,7 +78,7 @@ Create a file named `StartStopRestartVMRole.json`. Use this template (edit place
   "DataActions": [],
   "NotDataActions": [],
   "AssignableScopes": [
-    "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-entra-rbac-lab"
+    "/subscriptions/<PUT_YOUR_SUBSCRIPTION_ID_HERE>/resourceGroups/rg-entra-rbac-lab"
   ]
 }
 ```

@@ -11,6 +11,7 @@ Welcome to the Azure Training repository! This repository contains comprehensive
 - [Backup and Recovery](./BackupAndRecovery/README.md)
 - [Monitoring and Alerting](./MonitoringAndAlerting/README.md)
 - [Identity and Access Management](./IdentityAndAccess/README.md)
+- [Database Services](./Databases/README.md)
 - [App Service](./AppService/README.md)
 - [Azure DevOps](./Azure%20DevOps/README.md)
 
