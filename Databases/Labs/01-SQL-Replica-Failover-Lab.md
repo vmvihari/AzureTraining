@@ -1,5 +1,7 @@
 # Homework: Azure SQL Database Replica, Failover Group (DR), and MySQL
 
+> **Need Help?** Check out the [Step-by-Step Walkthrough](./01-SQL-Replica-Failover-Walkthrough.md) for detailed instructions.
+
 ## Part 1: Azure SQL Primary Database Setup (Central US)
 **Resource Group**: `rg-sql-replica-hw`
 **SQL Server**: `sql-central-hw-<yourname>-001`
