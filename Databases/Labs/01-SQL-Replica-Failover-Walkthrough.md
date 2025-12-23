@@ -75,9 +75,12 @@ SELECT * FROM dbo.Employees;
 ## Part 2: Create a Secondary Server (West US) + Geo-Replica
 
 ### 1. Configure Geo-Replication
-1. In the Azure Portal, go to your database `sqldb-central-hw-001`.
-2. Under **Data management**, click **Geo-Replication**.
-3. Click on the region **West US** (or select it from the "Target regions" list).
+1. In the Azure Portal, **ensure you are on the SQL Database page** (`sqldb-central-hw-001`), NOT the SQL Server page.
+2. Search the left-hand menu for **"Replicas"** or **"Geo-Replication"**.
+    - It is often under **Data management** or **Settings**.
+    - If you don't see it, type "Repliacs" or "Geo" in the search box at the top left of the menu.
+3. Click **Replicas** (or Geo-Replication).
+4. Click **+ Create replica** or select the target region (e.g., **West US**) from the map or list.
 
 ### 2. Create Secondary Server
 1. In the **Create replica** pane that opens:

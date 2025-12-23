@@ -13,6 +13,7 @@ Effective monitoring and alerting are crucial for maintaining the health, perfor
 3. [Log Analytics](./Concepts/03-LogAnalytics.md) - Workspace setup, Data Collection Rules (DCR), and KQL
 4. [Incident Response](./Concepts/04-IncidentResponse.md) - Alert lifecycle, triage, and escalation
 5. [Tools and Cost](./Concepts/05-ToolsAndCost.md) - Cost management and third-party tools
+6. [Azure Alerts Deep Dive](./Concepts/06-AzureAlertsDeepDive.md) - Detailed breakdown of Alert Rules, Signals, and Action Groups
 
 ### Labs
 
