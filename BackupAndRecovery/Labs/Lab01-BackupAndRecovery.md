@@ -73,7 +73,9 @@ By the end of this lab, you will be able to:
 
 4. **Important Configuration for Lab**:
    - Click **"Review + Create"**
-   - After creation, go to vault → **Properties** → **Backup Configuration**
+   - After creation, go to the vault.
+   - In the left menu, under **Settings**, click **Properties**.
+   - In the main panel on the right, find **Backup Configuration** and click **Update**.
    - **Storage Redundancy**: Select **LRS (Locally Redundant Storage)** - cheaper for lab
    - **DO NOT enable**:
      - ❌ Soft Delete
@@ -123,8 +125,10 @@ This enables full VM restoration or file-level recovery.
 #### Step 2: Enable Backup
 
 1. **Recovery Services Vault**: Select `lucky-vault`
-2. **Backup Policy**: Select **"StandardPolicy"** (daily backup at 2:00 AM)
-   - Or create custom policy with minimal retention (7 days) to save costs
+2. **Backup Policy**:
+   - Leave the default **"EnhancedPolicy"** selected if "Standard" is disabled.
+   - *Note: Newer "Trusted Launch" VMs often require Enhanced Policy. This is fine for the lab.*
+   - If available, you can choose **"StandardPolicy"** to save slightly on costs, but **Enhanced** is acceptable.
 3. Click **"Enable backup"**
 4. Wait for backup configuration to complete (1-2 minutes)
 
@@ -277,6 +281,7 @@ The MARS Agent enables:
 5. Click **"Install"**
 6. Wait for installation to complete (1-2 minutes)
 7. **Check "Proceed to Registration"** → Click **"Finish"**
+   - *Note: If you missed this or the wizard didn't open: Open **Microsoft Azure Backup** from the Start menu. In the **Actions** pane (right side), click **Register Server**.*
 
 #### Step 3: Register Server to Vault
 
@@ -703,6 +708,61 @@ Follow this exact order to avoid deletion errors:
   - Wait 10-15 minutes after deleting backup data
   - Check for any replication items or policies
   - If still fails, contact Azure support
+ 
+ **Problem**: `ResourceGroupDeletionBlocked` on `AzureBackupRG_...`
+ - **Cause**: This resource group contains **Restore Point Collections** (instant recovery points) that are locked by the Vault.
+ - **Solution**:
+   1. Go to your Vault (`lucky-vault`) → **Backup Items**.
+   2. Ensure all items are deleted.
+   3. Check **Soft Delete**:
+      - Go to **Properties** → **Security Settings** → **Update**.
+      - If Soft Delete is **Enabled**, your deleted items are in a "Soft Deleted" state (retained for 14 days).
+      - **To force delete**: Disable Soft Delete, then go to **Backup Items** → **Soft Deleted Items** → **Undelete** the item → **Delete** it again.
+   4. Once the Vault is truly empty, the `AzureBackupRG` will either disappear automatically or can be manually deleted.
+
+ **Problem**: "There are protected items in this vault" / Cannot Unregister Server
+ - **Cause**: Data still exists in a "Soft Deleted" state, preventing unregistration.
+ - **Solution (The specific sequence matters)**:
+   1. In the **Left Menu**, under **Settings**, click on **Properties**.
+   2. In the **Right Panel**, scroll down to the **Security Settings** heading.
+   3. Look specifically for the subsection **Soft Delete Settings**.
+   4. Click the blue **Update** link appearing directly under "Soft Delete Settings".
+   5. A new pane opens. **Uncheck** "Soft Delete" and **Save**.
+      - **Critical Troubleshooting**: If the checkbox is **MISSING** in the UI:
+        1. Open **Cloud Shell** (icon `>_` at top right of Portal). Select **PowerShell**.
+        2. Run these commands to force-disable it (updates module first to ensure command exists):
+           ```powershell
+           Update-Module -Name Az.RecoveryServices -Force
+           $vault = Get-AzRecoveryServicesVault -ResourceGroupName "rg-backup-lab" -Name "lucky-vault"
+           Set-AzRecoveryServicesVaultProperty -Vault $vault -SoftDeleteFeatureState Disable
+           ```
+           ```
+        3. **Alternative (Bash/Azure CLI)**:
+           If PowerShell fails or you see "Update-Module not found", switch Cloud Shell to **Bash** (top left dropdown) and run:
+           ```bash
+           az backup vault backup-properties set --name "lucky-vault" --resource-group "rg-backup-lab" --soft-delete-feature-state Disable
+           ```
+           az backup vault backup-properties set --name "lucky-vault" --resource-group "rg-backup-lab" --soft-delete-feature-state Disable
+           ```
+      - **Error `BMSUserErrorDisablingSoftDeleteStateNotAllowed`**:
+        - This means **"Always-on Soft Delete"** is enabled for your subscription or vault.
+        - **This is irreversible.** You cannot disable Soft Delete.
+        - **Impact**: You CANNOT delete the Backup Vault or Resource Group immediately.
+        - **Workaround**: 
+          1. Delete everything else (VM, Disks, NICs) individually.
+          2. Leave the Vault and Resource Group.
+          3. Wait **14 days** (after the backup item was deleted).
+          4. After 14 days, the soft-deleted item permanently expires, and you can delete the empty Vault.
+          5. *Note: You are NOT charged for soft-deleted data retention.*
+        - **Q: Can I manually delete the `Restore Point Collection`?**
+          - **No.** The Vault places a lock on this resource. Any attempt to manually delete it (or the Resource Group it lives in) will fail with the `ResourceGroupDeletionBlocked` error until the Soft Delete period expires.
+   6. Go to **Backup Items** → **Azure Backup Agent**.
+   3. Even if empty, check if there is a filter or separate tab for **"Soft Deleted Items"**.
+   4. If you see an item there:
+      - Click it → **Undelete** (Restores it to active state).
+      - Once active, click **Stop Backup** → **Delete Backup Data** again.
+      - *Because Soft Delete is now OFF, this will permanently delete it.*
+   5. NOW go to **Backup Infrastructure** → **Protected Servers** → **Unregister/Delete**.
 
 **Problem**: File-level backup shows "Failed"
 - **Solution**:

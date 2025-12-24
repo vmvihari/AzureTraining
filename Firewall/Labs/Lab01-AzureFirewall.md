@@ -49,6 +49,7 @@ By the end of this lab, you will be able to:
 - **Subnets**:
   - **AzureFirewallSubnet**: `10.0.1.0/24` (Must be named exactly this)
   - **AzureBastionSubnet**: `10.0.2.0/24` (Must be named exactly this, min /26)
+  - **AzureFirewallManagementSubnet**: `10.0.3.0/24` (Required if using Basic SKU)
 
 #### 2. Spoke VNET
 - **Resource Group**: `RG-Spoke`
@@ -123,13 +124,15 @@ By the end of this lab, you will be able to:
    - **Resource Group**: `RG-Hub`
    - **Name**: `FW-Hub`
    - **Region**: Same as VNET-Hub
-   - **Firewall SKU**: Standard
+   - **Firewall SKU**: Standard (or Basic)
    - **Firewall Management**: Use a Firewall Policy (create new) or Classic (choose Classic for simple lab)
      - *Recommendation: Choose **Classic** for this specific lab if available, or create a new **Standard Policy**.*
+     - *Note: If you choose **Basic SKU**, you must have created the `AzureFirewallManagementSubnet` in Part 1.*
 3. **Networking**:
    - **Virtual Network**: Use existing `VNET-Hub`
    - **Subnet**: Auto-selected `AzureFirewallSubnet`
    - **Public IP Address**: Create new (`FW-PIP`)
+   - **Management Public IP Address**: Create new (Required for Basic SKU)
 4. Click **Review + create** → **Create**.
 5. **IMPORTANT**: Once deployed, go to the Firewall resource and note its **Private IP address** (e.g., `10.0.1.4`).
 
