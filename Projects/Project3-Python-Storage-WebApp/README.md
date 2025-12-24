@@ -144,6 +144,7 @@ az webapp up \
   --name lucky-webapp-18454 \
   --resource-group lucky \
   --plan ASP-lucky-883d \
+  --sku B1 \
   --runtime "PYTHON:3.12" \
   --os-type Linux \
   --location canadacentral
