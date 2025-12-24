@@ -189,3 +189,29 @@ Create three Ubuntu VMs, one in each subnet.
 2. Check your email for the triggered alert.
 3. **Analyze Logs** (Activity Log):
    - Go to **Activity log** on the `db-vm` blade to see administrative events (start, stop, etc.).
+
+---
+
+### 5. Troubleshooting
+
+If `curl` times out or fails to connect:
+
+1.  **Verify Local Connectivity (on `app-vm`)**:
+    - Open a second terminal on `app-vm`.
+    - Run: `curl -v 127.0.0.1:8080`
+    - If this fails, the Python server isn't running correctly.
+
+2.  **Verify Private IP**:
+    - Ensure you are using the **Private IP** of `app-vm` (10.0.2.x), NOT the Public IP.
+    - Run `hostname -I` on `app-vm` to verify its IP.
+
+3.  **Check NSG Effective Rules**:
+    - Go to `app-vm` in the Azure Portal.
+    - Under **Networking**, click on the Network Interface name.
+    - Select **Effective security rules**.
+    - Ensure there is an **Allow** rule for Port 8080 from the `web-vm` IP (or VNet).
+    - Ensure there are no **Deny** rules blocking it.
+
+4.  **Check ASG Association**:
+    - Ensure `asg-web` is attached to `web-vm`.
+    - Ensure `asg-app` is attached to `app-vm`.
