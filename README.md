@@ -14,6 +14,7 @@ Welcome to the Azure Training repository! This repository contains comprehensive
 - [Database Services](./Databases/README.md)
 - [App Service](./AppService/README.md)
 - [Azure DevOps](./Azure%20DevOps/README.md)
+- [Docker & Containerization](./Docker/README.md)
 
 ### 🚀 Hands-On Projects
 - [Projects](./Projects/README.md) - Practical Azure implementation projects
