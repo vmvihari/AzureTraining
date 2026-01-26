@@ -15,8 +15,12 @@ This section covers the concepts and implementation details for Azure DevOps, in
     - [Lifecycle & Containers](Concepts/07-LifecycleAndContainers.md)
     - [Account Setup](Concepts/08-AccountSetup.md)
     - [Git Advanced Operations (Reset, Stash, Cherry-pick)](Concepts/09-GitAdvancedOperations.md)
+    - [Creating Git Repositories](Concepts/10-GitRepoCreation.md)
+    - [Repository Security & Tags](Concepts/11-GitSecurityAndTags.md)
+    - [Pull Request Workflow](Concepts/12-PullRequestWorkflow.md)
 
 ## Labs
 - [Git Homework](Labs/01-GitHomework.md)
 - [ARM Templates (Process)](Labs/02-ARMTemplates.md)
 - [Git Advanced Homework (Reset, Stash, Cherry-pick)](Labs/03-GitAdvancedHomework.md)
+- [Git Repository Management (Push, PR, Tags)](Labs/04-GitRepoManagement.md)
