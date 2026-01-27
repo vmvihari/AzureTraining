@@ -1,142 +1,262 @@
 # Lab 02: Docker Installation and Management Homework
 
 ## Objective
-In this lab, you will create an Ubuntu Virtual Machine in Azure, install Docker using the convenience script, configure rootless access, and practice basic container management commands using Nginx.
+In this lab, you will perform a comprehensive hands-on practice with Docker on a Linux VM. You will go through installation, permission management, system exploration, image and container operations, and cleanup.
 
 ## Prerequisites
 - An active Azure Subscription.
 - A terminal (PowerShell, Bash, or Azure Cloud Shell).
 
-## Task 1: Create a Ubuntu VM in Azure
+---
 
-1.  **Log in to Azure Portal**: Go to [portal.azure.com](https://portal.azure.com).
-2.  **Create a Resource**: Click "Create a resource" > "Ubuntu Server 20.04 LTS" (or 22.04 LTS).
-3.  **Configure Basics**:
-    - **Resource Group**: `DockerLab_RG` (create new).
-    - **Virtual Machine Name**: `DockerVM`.
-    - **Region**: East US (or your preferred region).
-    - **Image**: Ubuntu Server 20.04 LTS - Gen2.
-    - **Size**: Standard_B1s (sufficient for this lab).
-    - **Authentication type**: SSH public key.
-    - **Username**: `azureuser`.
-    - **Inbound port rules**: Allow selected ports (SSH 22). **IMPORTANT**: Also add port **8080** later or now to access Nginx.
-4.  **Review + Create**: Click "Review + create", pass validation, and hit "Create".
-5.  **Connect**: Once deployed, click "Go to resource" and connect via SSH.
+## Task 1: Install Docker on Linux
+
+1.  **Launch an Ubuntu Linux VM** in Azure (e.g., Standard_B1s, Ubuntu 20.04/22.04 LTS).
+2.  **Log in to the VM** using SSH:
     ```bash
     ssh azureuser@<VM-Public-IP>
     ```
-
-> **Note**: Don't forget to open port **8080** in the Networking settings of your VM if you want to access the web server from your browser later.
+3.  **Update the system packages**:
+    ```bash
+    sudo apt update
+    ```
+4.  **Download the official Docker installation script**:
+    ```bash
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    ```
+5.  **Execute the script to install Docker**:
+    ```bash
+    sudo sh get-docker.sh
+    ```
+6.  **Verify Docker installation**:
+    ```bash
+    sudo docker --version
+    ```
+7.  **Run the hello-world container**:
+    ```bash
+    sudo docker run hello-world
+    ```
 
 ---
 
-## Task 2: Login and Install Docker
+## Task 2: Fix Docker Permission Issue
 
-We will use the official Docker convenience script for a quick installation on Linux.
-
-1.  **Update package database**:
+1.  **Try running a command without sudo** and observe the "permission denied" error:
     ```bash
-    sudo apt update -y
+    docker ps
     ```
-
-2.  **Download and run the Docker installation script**:
+2.  **Add your Linux user to the docker group**:
     ```bash
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
     ```
-
-### Setup Rootless Access
-By default, running Docker requires `sudo`. Let's configure it so you can run it as a regular user.
-
-1.  **Create the docker group** (if it doesn't exist):
-    ```bash
-    sudo groupadd -f docker
-    ```
-
-2.  **Add your user to the docker group**:
-    ```bash
-    sudo usermod -aG docker "$USER"
-    ```
-
-3.  **Apply group changes**:
-    You can either log out and log back in, or run:
+3.  **Refresh the group session**:
     ```bash
     newgrp docker
     ```
-
-4.  **Verify Docker installation (without sudo)**:
+4.  **Confirm access is fixed**:
     ```bash
-    docker --version
     docker ps
     ```
-    *Output should show the version and an empty list of containers without permission errors.*
+    *(Should list containers without error)*
 
 ---
 
-## Task 3: Pull an Image from Docker Hub
+## Task 3: Explore Docker System Commands
 
-1.  **Pull the Nginx image**:
+1.  **Check Docker disk usage**:
+    ```bash
+    docker system df
+    ```
+2.  **View Docker system information**:
+    ```bash
+    docker info
+    ```
+3.  **Monitor Docker system events**:
+    *   Open a new terminal tab, SSH into the VM, and run:
+        ```bash
+        docker events
+        ```
+    *   Keep this running.
+4.  **Generate events**:
+    *   In your original terminal:
+        ```bash
+        docker run --rm hello-world
+        ```
+5.  **Observe events**: Check the `docker events` tab to see the "create", "start", "die", etc. events.
+
+---
+
+## Task 4: Work with Docker Images
+
+1.  **Search for the nginx image**:
+    ```bash
+    docker search nginx
+    ```
+2.  **Pull the nginx image** (defaults to `latest`):
     ```bash
     docker pull nginx
     ```
-
-2.  **Verify the image was pulled**:
+3.  **Pull the ubuntu image**:
+    ```bash
+    docker pull ubuntu
+    ```
+4.  **List all locally available images**:
     ```bash
     docker images
     ```
-    *Concept checked: Docker Hub, Images*
+5.  **Note**: Observe under the "TAG" column that `latest` was downloaded because no specific tag was provided.
 
 ---
 
-## Task 4: Run a Container
+## Task 5: Run Containers and Observe Behavior
 
-1.  **Run Nginx in detached mode** mapping host port 8080 to container port 80:
+1.  **Run an ubuntu container normally**:
     ```bash
-    docker run -d -p 8080:80 --name my-nginx nginx
+    docker run ubuntu
     ```
-
-2.  **Verify the container is running**:
-    ```bash
-    docker ps
-    ```
-
-3.  **Access in Browser**:
-    Open your web browser and navigate to:
-    `http://<VM-Public-IP>:8080`
-    
-    *You should see the "Welcome to nginx!" default page.*
-
-    > **Troubleshooting**: If the page doesn't load, check your Azure VM Networking settings. Ensure an Inbound Security Rule exists for port **8080** (Protocol: TCP, Source: Any, Destination port ranges: 8080).
-
-    *Concept checked: Containers, Port Mapping*
-
----
-
-## Task 5: Container Management
-
-Practice the following lifecycle commands:
-
-1.  **Stop the container**:
-    ```bash
-    docker stop my-nginx
-    ```
-
-2.  **Start the container**:
-    ```bash
-    docker start my-nginx
-    ```
-
-3.  **Restart the container**:
-    ```bash
-    docker restart my-nginx
-    ```
-
-4.  **Remove the container** (forcefully, since it's running):
-    ```bash
-    docker rm -f my-nginx
-    ```
-
-5.  **Verify it is gone**:
+2.  **Check container status**:
     ```bash
     docker ps -a
     ```
+    *Observation: It status is "Exited".*
+3.  **Run an nginx container**:
+    ```bash
+    docker run -d nginx
+    ```
+4.  **Check running containers**:
+    ```bash
+    docker ps
+    ```
+    *Observation: Nginx stays "Up".*
+5.  **Why?** Ubuntu container exited because it had no foreground process to keep it alive (it just started bash and exited). Nginx has a built-in foreground process (the web server) that keeps running.
+
+---
+
+## Task 6: Container Lifecycle Management
+
+1.  **Stop the running nginx container**:
+    ```bash
+    docker stop <container_id_or_name>
+    ```
+2.  **Start the same container again**:
+    ```bash
+    docker start <container_id_or_name>
+    ```
+3.  **Check container logs**:
+    ```bash
+    docker logs <container_id_or_name>
+    ```
+4.  **View real-time logs**:
+    ```bash
+    docker logs -f <container_id_or_name>
+    ```
+    *(Press Ctrl+C to exit)*
+5.  **Stop the container again**:
+    ```bash
+    docker stop <container_id_or_name>
+    ```
+
+---
+
+## Task 7: Run Container in Detached Mode with Name
+
+1.  **Run nginx in detached mode with a name**:
+    ```bash
+    docker run -d --name my-web-server nginx
+    ```
+2.  **Verify it is running**:
+    ```bash
+    docker ps
+    ```
+3.  **Confirm detached mode**: Your terminal prompt returned immediately, meaning it's running in the background.
+
+---
+
+## Task 8: Port Binding and Browser Access
+
+1.  **Run nginx with port mapping (Host 8080 -> Container 80)**:
+    ```bash
+    docker run -d -p 8080:80 --name public-web nginx
+    ```
+2.  **Open VM's Security Rules**:
+    *   Go to Azure Portal > Your VM > Networking.
+    *   Add Inbound Port Rule: Destination Port `8080`, Protocol `TCP`, Action `Allow`.
+3.  **Access functionality**:
+    *   Open browser: `http://<VM-Public-IP>:8080`
+    *   *Verify you see "Welcome to nginx!"*
+
+---
+
+## Task 9: Multiple Containers from Same Image
+
+1.  **Run a second nginx container on port 8081**:
+    ```bash
+    docker run -d -p 8081:80 --name secondary-web nginx
+    ```
+    *(Remember to open port 8081 in Azure Networking if you want to test externally)*
+2.  **Verify both are running**:
+    ```bash
+    docker ps
+    ```
+3.  **Access**: You now have two separate web servers running from the same image on different ports.
+
+---
+
+## Task 10: Image Tagging and Docker Hub Login
+
+1.  **Retag the nginx image**:
+    ```bash
+    # Replace <your-dockerhub-username>
+    docker tag nginx <your-dockerhub-username>/my-nginx-custom:v1
+    ```
+2.  **Create Access Token**:
+    *   Go to [hub.docker.com](https://hub.docker.com) > Settings > Security > New Access Token.
+3.  **Login to Docker Hub**:
+    ```bash
+    docker login -u <your-dockerhub-username>
+    # Paste the token when prompted for password
+    ```
+4.  **Push the image**:
+    ```bash
+    docker push <your-dockerhub-username>/my-nginx-custom:v1
+    ```
+5.  **Verify**: Check your repository on Docker Hub to see the new image.
+
+---
+
+## Task 11: Cleanup Containers
+
+1.  **List all containers (running and stopped)**:
+    ```bash
+    docker ps -a
+    ```
+2.  **Remove all containers at once**:
+    *   **Warning**: This deletes everything!
+    ```bash
+    docker rm -f $(docker ps -aq)
+    ```
+    *   `-f`: Force removal (for running containers).
+    *   `$(docker ps -aq)`: Sub-command that lists all container IDs.
+3.  **Verify**:
+    ```bash
+    docker ps -a
+    ```
+    *(Should be empty)*
+
+---
+
+## Task 12: Cleanup Images
+
+1.  **List all images**:
+    ```bash
+    docker images
+    ```
+2.  **Remove all images at once**:
+    ```bash
+    docker rmi -f $(docker images -q)
+    ```
+3.  **Confirm**:
+    ```bash
+    docker images
+    ```
+    *(Should be empty)*

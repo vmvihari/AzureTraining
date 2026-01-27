@@ -7,6 +7,7 @@ This section covers the fundamentals of Docker, containerization, and microservi
 - [Concepts](Concepts/)
     - [Monolithic vs. Microservices Architecture](Concepts/01-MicroservicesVsMonolith.md)
     - [Introduction to Docker](Concepts/02-DockerIntroduction.md)
+    - [Docker Architecture & Commands](Concepts/03-DockerArchitectureAndCommands.md)
 
 ## Key Learning Goals
 1.  Understand the shift from Monolith to Microservices.
