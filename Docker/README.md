@@ -16,3 +16,4 @@ This section covers the fundamentals of Docker, containerization, and microservi
 
 ## Labs
 - [Monolith vs. Microservices (Azure DevOps Setup)](Labs/01-MicroservicesSetup.md)
+- [Lab 02: Docker Installation and Management](Labs/02-DockerHomework.md)
