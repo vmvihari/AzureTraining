@@ -11,6 +11,7 @@ This section covers the fundamentals of Docker, containerization, and microservi
     - [Container Operations & Management](Concepts/04-ContainerOperations.md)
     - [Docker Storage & Volumes](Concepts/05-DockerVolumes.md)
     - [Introduction to Dockerfiles](Concepts/06-Dockerfiles.md)
+    - [Image Management Best Practices](Concepts/07-ImageManagement.md)
 
 ## Key Learning Goals
 1.  Understand the shift from Monolith to Microservices.
@@ -23,3 +24,4 @@ This section covers the fundamentals of Docker, containerization, and microservi
 - [Lab 02: Docker Installation and Management](Labs/02-DockerHomework.md)
 - [Lab 03: Docker Practical Homework (Intermediate)](Labs/03-DockerPracticalHomework.md)
 - [Lab 04: Docker Volumes and Advanced Builds](Labs/04-DockerVolumesAndBuilds.md)
+- [Lab 05: Dockerfile Hands-On Practice (Homework)](Labs/05-DockerfileHomework.md)

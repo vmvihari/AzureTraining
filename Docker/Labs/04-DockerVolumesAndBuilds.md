@@ -244,3 +244,119 @@ To master Docker data persistence using Named and Bind volumes, and to understan
     time docker build -t cache-test:v2.1 .
     ```
     *Expected*: Cache breaks for layers after the modified line.
+
+---
+
+## Task 7: Optimizing Layers with RUN
+
+**Goal**: Reduce image size and layers by combining commands.
+
+1.  **Create Bad Dockerfile (Multiple RUN commands)**:
+    ```bash
+    cat > Dockerfile.bad <<EOF
+    FROM ubuntu:latest
+    RUN apt-get update
+    RUN apt-get install -y curl
+    RUN apt-get install -y vim
+    EOF
+    ```
+2.  **Build Bad Image**:
+    ```bash
+    docker build -f Dockerfile.bad -t bad-optimization:v1 .
+    ```
+3.  **Create Good Dockerfile (Chained commands)**:
+    ```bash
+    cat > Dockerfile.good <<EOF
+    FROM ubuntu:latest
+    RUN apt-get update && \
+        apt-get install -y curl vim && \
+        rm -rf /var/lib/apt/lists/*
+    EOF
+    ```
+4.  **Build Good Image**:
+    ```bash
+    docker build -f Dockerfile.good -t good-optimization:v1 .
+    ```
+5.  **Compare History/Layers**:
+    ```bash
+    docker history bad-optimization:v1
+    docker history good-optimization:v1
+    ```
+    *   *Observation*: The "good" image has fewer layers contributed by the `RUN` command.
+
+---
+
+## Task 8: WORKDIR Demonstration
+
+**Goal**: Show how WORKDIR changes the context for all future commands.
+
+1.  **Create Dockerfile**:
+    ```bash
+    cat > Dockerfile.workdir <<EOF
+    FROM alpine:latest
+    WORKDIR /app
+    RUN echo "I am in /app" > info.txt
+    WORKDIR /app/data
+    RUN echo "I am in /app/data" > data.txt
+    EOF
+    ```
+2.  **Build and Run**:
+    ```bash
+    docker build -f Dockerfile.workdir -t workdir-demo:v1 .
+    docker run --rm workdir-demo:v1 sh -c 'ls -l /app && ls -l /app/data'
+    ```
+    *   *Expected*: `info.txt` is in `/app`, `data.txt` is in `/app/data`.
+
+---
+
+## Task 9: CMD vs ENTRYPOINT
+
+**Goal**: Verify how `docker run` arguments override (or don't override) startup commands.
+
+### Part A: CMD (Overridable)
+
+1.  **Create Dockerfile**:
+    ```bash
+    cat > Dockerfile.cmd <<EOF
+    FROM alpine:latest
+    CMD ["echo", "Hello from CMD"]
+    EOF
+    ```
+2.  **Build**:
+    ```bash
+    docker build -f Dockerfile.cmd -t cmd-demo:v1 .
+    ```
+3.  **Run with Default**:
+    ```bash
+    docker run --rm cmd-demo:v1
+    # Output: Hello from CMD
+    ```
+4.  **Run with Override**:
+    ```bash
+    docker run --rm cmd-demo:v1 echo "Overridden!"
+    # Output: Overridden!
+    ```
+
+### Part B: ENTRYPOINT (Persistent)
+
+1.  **Create Dockerfile**:
+    ```bash
+    cat > Dockerfile.entry <<EOF
+    FROM alpine:latest
+    ENTRYPOINT ["echo", "Hello from ENTRYPOINT"]
+    EOF
+    ```
+2.  **Build**:
+    ```bash
+    docker build -f Dockerfile.entry -t entry-demo:v1 .
+    ```
+3.  **Run with Default**:
+    ```bash
+    docker run --rm entry-demo:v1
+    # Output: Hello from ENTRYPOINT
+    ```
+4.  **Run with Args**:
+    ```bash
+    docker run --rm entry-demo:v1 "Extra Args"
+    # Output: Hello from ENTRYPOINT Extra Args
+    ```
