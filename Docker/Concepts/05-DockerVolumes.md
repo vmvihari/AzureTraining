@@ -15,7 +15,7 @@ To persist data, we use **Volumes**.
 
 ## 2. Named Volumes
 
-Named volumes are the preferred method for persisting data. They are managed by Docker and stored in a dedicated area of the host filesystem (usually `/var/lib/docker/volumes` on Linux/VMs).
+Named volumes are the preferred method for persisting data in **production** or when you simply want data to survive container restarts without caring where it is stored on the host. They are managed by Docker.
 
 ### Creating a Volume
 ```bash
@@ -23,7 +23,7 @@ docker volume create my-data-vol
 ```
 
 ### Mounting a Volume
-Use the `-v` flag to mount the volume to a specific directory inside the container.
+Use the `-v` flag to mount the volume.
 
 ```bash
 docker run -d \
@@ -31,25 +31,54 @@ docker run -d \
   -v my-data-vol:/data \
   alpine
 ```
-*   **Source**: `my-data-vol` (Managed by Docker)
-*   **Destination**: `/data` (Inside the container)
+*   **Source**: `my-data-vol` (Managed by Docker, usually in `/var/lib/docker/volumes`).
+*   **Destination**: `/data` (Inside the container).
 
 ### Verifying Persistence
 1.  **Create data**: Enter the container and create a file in `/data`.
 2.  **Delete container**: `docker rm -f db-container`.
 3.  **New container**: Start a *new* container mounting the *same* volume.
-4.  **Verify**: The file created in step 1 will still be there.
+4.  **Verify**: The file will still be there.
 
 ---
 
-## 3. Managing Volumes
+## 3. Bind Mounts
+
+Bind mounts map a specific file or directory on the **host machine** to a file or directory inside the container. This is essential for **development**.
+
+### How it Works
+You provide the exact path on your host machine. Any change you make in that folder is immediately visible inside the container, and vice versa.
+
+### Usage Example (Nginx)
+Imagine you have an `index.html` file in your current directory on your laptop/VM (`$(pwd)`).
+
+```bash
+docker run -d \
+  --name dev-web \
+  -p 8080:80 \
+  -v $(pwd):/usr/share/nginx/html \
+  nginx
+```
+
+*   **Source**: `$(pwd)` (Current directory on Host).
+*   **Destination**: `/usr/share/nginx/html` (Nginx default web root).
+
+### Development Workflow
+1.  Start the container with a bind mount.
+2.  Edit `index.html` locally using VS Code or Notepad.
+3.  Refresh the browser. You see changes **instantly**.
+4.  No need to rebuild the image for every simple HTML/CSS change.
+
+---
+
+## 4. Managing Volumes
 
 *   **List Volumes**:
     ```bash
     docker volume ls
     ```
 
-*   **Inspect Volume** (Find physical location on host):
+*   **Inspect Volume** (Find physical location):
     ```bash
     docker volume inspect <volume_name>
     ```
@@ -58,21 +87,20 @@ docker run -d \
     ```bash
     docker volume rm <volume_name>
     ```
-    > [!WARNING]
-    > You cannot remove a volume that is in use by a container (even a stopped one). Remove the container first.
 
 *   **Prune Failure**:
     ```bash
     docker volume prune
     ```
-    Removes all unused local volumes.
+    *Removes all unused local volumes.*
 
 ---
 
-## Summary
+## Summary: Named vs. Bind
 
-| Storage Type | Characteristics | Best For |
+| Feature | Named Volume | Bind Mount |
 | :--- | :--- | :--- |
-| **Container Layer** | Ephemeral, lost on deletion | Temporary files, scratch space |
-| **Named Volume** | Persistent, managed by Docker | Database storage, sharing data between containers |
-| **Bind Mount** | Maps exact host path to container | Development (live code reloading), config files |
+| **Managed By** | Docker (`/var/lib/docker/volumes/...`) | You (Local Host Filesystem) |
+| **Best For** | Database storage, Production persistence | Local Development, Live Code Reloading |
+| **Dependence** | Independent of host folder structure | Dependent on host OS directory structure |
+| **Performance** | High | Variable (depends on host OS) |

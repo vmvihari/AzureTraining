@@ -1,7 +1,7 @@
 # Lab 02: Docker Installation and Management Homework
 
 ## Objective
-In this lab, you will perform a comprehensive hands-on practice with Docker on a Linux VM. You will go through installation, permission management, system exploration, image and container operations, and cleanup.
+In this lab, you will perform a comprehensive hands-on practice with Docker on a Linux VM. You will cover installation, permission management, data persistence (Volumes), and custom image creation (Dockerfiles).
 
 ## Prerequisites
 - An active Azure Subscription.
@@ -11,252 +11,181 @@ In this lab, you will perform a comprehensive hands-on practice with Docker on a
 
 ## Task 1: Install Docker on Linux
 
-1.  **Launch an Ubuntu Linux VM** in Azure (e.g., Standard_B1s, Ubuntu 20.04/22.04 LTS).
-2.  **Log in to the VM** using SSH:
-    ```bash
-    ssh azureuser@<VM-Public-IP>
-    ```
-3.  **Update the system packages**:
+1.  **Launch an Ubuntu Linux VM** in Azure.
+2.  **Log in via SSH**: `ssh azureuser@<VM-Public-IP>`
+3.  **Update and Install**:
     ```bash
     sudo apt update
-    ```
-4.  **Download the official Docker installation script**:
-    ```bash
     curl -fsSL https://get.docker.com -o get-docker.sh
-    ```
-5.  **Execute the script to install Docker**:
-    ```bash
     sudo sh get-docker.sh
     ```
-6.  **Verify Docker installation**:
-    ```bash
-    sudo docker --version
-    ```
-7.  **Run the hello-world container**:
-    ```bash
-    sudo docker run hello-world
-    ```
+4.  **Verify**: `sudo docker --version`
 
 ---
 
 ## Task 2: Fix Docker Permission Issue
 
-1.  **Try running a command without sudo** and observe the "permission denied" error:
-    ```bash
-    docker ps
-    ```
-2.  **Add your Linux user to the docker group**:
+1.  **Grant Permissions**:
     ```bash
     sudo usermod -aG docker $USER
-    ```
-3.  **Refresh the group session**:
-    ```bash
     newgrp docker
     ```
-4.  **Confirm access is fixed**:
-    ```bash
-    docker ps
-    ```
-    *(Should list containers without error)*
+2.  **Verify**: `docker ps` (Should run without `sudo`).
 
 ---
 
 ## Task 3: Explore Docker System Commands
 
-1.  **Check Docker disk usage**:
-    ```bash
-    docker system df
-    ```
-2.  **View Docker system information**:
-    ```bash
-    docker info
-    ```
-3.  **Monitor Docker system events**:
-    *   Open a new terminal tab, SSH into the VM, and run:
-        ```bash
-        docker events
-        ```
-    *   Keep this running.
-4.  **Generate events**:
-    *   In your original terminal:
-        ```bash
-        docker run --rm hello-world
-        ```
-5.  **Observe events**: Check the `docker events` tab to see the "create", "start", "die", etc. events.
+1.  **Disk Usage**: `docker system df`
+2.  **System Info**: `docker info`
+3.  **Events**: Open a second terminal, SSH in, and run `docker events`. Keep it open to watch the next steps.
 
 ---
 
-## Task 4: Work with Docker Images
+## Task 4: Basic Container Operations
 
-1.  **Search for the nginx image**:
+1.  **Run Nginx**:
     ```bash
-    docker search nginx
+    docker run -d --name basic-web nginx
     ```
-2.  **Pull the nginx image** (defaults to `latest`):
+2.  **View Logs**: `docker logs basic-web`
+3.  **Stop and Start**:
     ```bash
-    docker pull nginx
-    ```
-3.  **Pull the ubuntu image**:
-    ```bash
-    docker pull ubuntu
-    ```
-4.  **List all locally available images**:
-    ```bash
-    docker images
-    ```
-5.  **Note**: Observe under the "TAG" column that `latest` was downloaded because no specific tag was provided.
-
----
-
-## Task 5: Run Containers and Observe Behavior
-
-1.  **Run an ubuntu container normally**:
-    ```bash
-    docker run ubuntu
-    ```
-2.  **Check container status**:
-    ```bash
-    docker ps -a
-    ```
-    *Observation: It status is "Exited".*
-3.  **Run an nginx container**:
-    ```bash
-    docker run -d nginx
-    ```
-4.  **Check running containers**:
-    ```bash
-    docker ps
-    ```
-    *Observation: Nginx stays "Up".*
-5.  **Why?** Ubuntu container exited because it had no foreground process to keep it alive (it just started bash and exited). Nginx has a built-in foreground process (the web server) that keeps running.
-
----
-
-## Task 6: Container Lifecycle Management
-
-1.  **Stop the running nginx container**:
-    ```bash
-    docker stop <container_id_or_name>
-    ```
-2.  **Start the same container again**:
-    ```bash
-    docker start <container_id_or_name>
-    ```
-3.  **Check container logs**:
-    ```bash
-    docker logs <container_id_or_name>
-    ```
-4.  **View real-time logs**:
-    ```bash
-    docker logs -f <container_id_or_name>
-    ```
-    *(Press Ctrl+C to exit)*
-5.  **Stop the container again**:
-    ```bash
-    docker stop <container_id_or_name>
+    docker stop basic-web
+    docker start basic-web
     ```
 
 ---
 
-## Task 7: Run Container in Detached Mode with Name
+## Task 5: Port Binding and Azure Networking
 
-1.  **Run nginx in detached mode with a name**:
-    ```bash
-    docker run -d --name my-web-server nginx
-    ```
-2.  **Verify it is running**:
-    ```bash
-    docker ps
-    ```
-3.  **Confirm detached mode**: Your terminal prompt returned immediately, meaning it's running in the background.
-
----
-
-## Task 8: Port Binding and Browser Access
-
-1.  **Run nginx with port mapping (Host 8080 -> Container 80)**:
+1.  **Remove previous container**: `docker rm -f basic-web`
+2.  **Run with Port Mapping**:
     ```bash
     docker run -d -p 8080:80 --name public-web nginx
     ```
-2.  **Open VM's Security Rules**:
-    *   Go to Azure Portal > Your VM > Networking.
-    *   Add Inbound Port Rule: Destination Port `8080`, Protocol `TCP`, Action `Allow`.
-3.  **Access functionality**:
-    *   Open browser: `http://<VM-Public-IP>:8080`
-    *   *Verify you see "Welcome to nginx!"*
+3.  **Azure Configuration**:
+    *   Go to **Azure Portal > VM > Networking**.
+    *   Add Inbound Rule: Port **8080**, Allow.
+4.  **Test**: Visit `http://<VM-Public-IP>:8080` in your browser.
 
 ---
 
-## Task 9: Multiple Containers from Same Image
+## Task 6: Working with Named Volumes (Persistence)
 
-1.  **Run a second nginx container on port 8081**:
+1.  **Create Volume**:
     ```bash
-    docker run -d -p 8081:80 --name secondary-web nginx
+    docker volume create my-data
     ```
-    *(Remember to open port 8081 in Azure Networking if you want to test externally)*
-2.  **Verify both are running**:
+2.  **Mount to Nginx**:
     ```bash
-    docker ps
+    docker run -d -p 8081:80 -v my-data:/usr/share/nginx/html --name vol-web nginx
     ```
-3.  **Access**: You now have two separate web servers running from the same image on different ports.
+    *(Remember to open port 8081 in Azure if testing externally)*
+3.  **Concept**: Even if you delete `vol-web`, the data in `my-data` persists.
 
 ---
 
-## Task 10: Image Tagging and Docker Hub Login
+## Task 7: Working with Bind Volumes (Development)
 
-1.  **Retag the nginx image**:
+1.  **Setup Local Directory**:
     ```bash
-    # Replace <your-dockerhub-username>
-    docker tag nginx <your-dockerhub-username>/my-nginx-custom:v1
+    mkdir ~/my-site
+    echo "<h1>Hello from Bind Mount</h1>" > ~/my-site/index.html
     ```
-2.  **Create Access Token**:
-    *   Go to [hub.docker.com](https://hub.docker.com) > Settings > Security > New Access Token.
-3.  **Login to Docker Hub**:
+2.  **Mount Local Folder**:
     ```bash
-    docker login -u <your-dockerhub-username>
-    # Paste the token when prompted for password
+    docker run -d -p 8082:80 -v ~/my-site:/usr/share/nginx/html --name bind-web nginx
     ```
-4.  **Push the image**:
-    ```bash
-    docker push <your-dockerhub-username>/my-nginx-custom:v1
-    ```
-5.  **Verify**: Check your repository on Docker Hub to see the new image.
+3.  **Live Update**:
+    *   Edit `~/my-site/index.html` locally.
+    *   Curl or refresh `localhost:8082`.
+    *   Observation: Changes appear instantly without rebuilding.
 
 ---
 
-## Task 11: Cleanup Containers
+## Task 8: Create a Dockerfile
 
-1.  **List all containers (running and stopped)**:
+1.  **Setup Build Folder**:
     ```bash
-    docker ps -a
+    mkdir ~/custom-image
+    cd ~/custom-image
     ```
-2.  **Remove all containers at once**:
-    *   **Warning**: This deletes everything!
+2.  **Create Dockerfile**:
+    ```bash
+    nano Dockerfile
+    ```
+    Content:
+    ```dockerfile
+    FROM nginx:latest
+    LABEL version="1.0"
+    LABEL maintainer="learning@example.com"
+    ```
+
+---
+
+## Task 9: COPY vs ADD Instructions
+
+1.  **Create Assets**:
+    ```bash
+    echo "<h1>Custom Image Page</h1>" > index.html
+    mkdir assets
+    touch assets/style.css
+    tar -czvf assets.tar.gz assets/
+    ```
+2.  **Update Dockerfile**:
+    ```dockerfile
+    FROM nginx:latest
+    LABEL version="1.0"
+    
+    # COPY: Best for local files
+    COPY index.html /usr/share/nginx/html/index.html
+    
+    # ADD: Extracts tarballs automatically
+    ADD assets.tar.gz /usr/share/nginx/html/
+    ```
+
+---
+
+## Task 10: Build, Tag, and Caching
+
+1.  **Build Image**:
+    ```bash
+    docker build -t my-app:v1 .
+    ```
+2.  **Test Cache**:
+    *   Run the same command again.
+    *   Observe "Using cache" (Build should be instant).
+
+---
+
+## Task 11: Docker Hub Integration
+
+1.  **Tag for Hub**:
+    ```bash
+    # Replace <username> with your Docker Hub ID
+    docker tag my-app:v1 <username>/my-app:v1
+    ```
+2.  **Login and Push**:
+    ```bash
+    docker login
+    docker push <username>/my-app:v1
+    ```
+
+---
+
+## Task 12: Advanced Cleanup
+
+1.  **Remove All Containers**:
     ```bash
     docker rm -f $(docker ps -aq)
     ```
-    *   `-f`: Force removal (for running containers).
-    *   `$(docker ps -aq)`: Sub-command that lists all container IDs.
-3.  **Verify**:
-    ```bash
-    docker ps -a
-    ```
-    *(Should be empty)*
-
----
-
-## Task 12: Cleanup Images
-
-1.  **List all images**:
-    ```bash
-    docker images
-    ```
-2.  **Remove all images at once**:
+2.  **Remove All Images**:
     ```bash
     docker rmi -f $(docker images -q)
     ```
-3.  **Confirm**:
+3.  **Prune Volumes**:
     ```bash
-    docker images
+    docker volume prune -f
     ```
-    *(Should be empty)*
+    *Warning: This deletes all unused volumes.*
