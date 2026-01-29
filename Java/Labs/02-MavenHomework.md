@@ -172,6 +172,31 @@ Run the following commands one by one and observe the output.
 
 ---
 
+## Troubleshooting
+
+### Error: "Web server failed to start. Port 8080 was already in use."
+This happens if you try to run the application directly (e.g., `java -jar target/*.jar`) while the external Tomcat server (started in Task 5) is **already running**. Both use port 8080.
+
+**Solution**:
+1.  **Stop Tomcat** first:
+    ```bash
+    cd ~/apache-tomcat-9.0.96/bin
+    ./shutdown.sh
+    ```
+2.  **OR** Run the app on a different port:
+    ```bash
+    java -jar target/*.jar --server.port=8081
+    ```
+
+3.  **Find and Kill** the process manually (if stuck):
+    ```bash
+    sudo lsof -i :8080
+    # Note the PID (Process ID)
+    kill -9 <PID>
+    ```
+
+---
+
 ## Submission Requirements
 
 Please submit:
