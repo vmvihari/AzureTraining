@@ -10,6 +10,7 @@ Welcome to the Azure Training repository! This repository contains comprehensive
 - [Firewall & Network Security](./Firewall/README.md)
 - [Backup and Recovery](./BackupAndRecovery/README.md)
 - [Monitoring and Alerting](./MonitoringAndAlerting/README.md)
+- [Terraform](./Terraform/README.md)
 - [Identity and Access Management](./IdentityAndAccess/README.md)
 - [Database Services](./Databases/README.md)
 - [App Service](./AppService/README.md)

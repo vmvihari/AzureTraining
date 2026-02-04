@@ -23,3 +23,5 @@ This section covers the essentials of Java application development and the Maven
     *   Session 48 Homework: Spring Petclinic build & deploy.
 *   [Lab 03: SonarQube Setup](Labs/03-SonarQubeSetup.md)
     *   Account creation and token generation for SonarCloud.
+*   [Lab 04: Homework - SonarQube Scanning](Labs/04-SonarQubeHomework.md)
+    *   Practical assignment: Running scans and analyzing results.

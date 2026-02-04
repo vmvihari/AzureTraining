@@ -32,3 +32,25 @@ A **Quality Gate** is a set of conditions the code must meet to be considered "P
 *   *Example Rule*: "Code coverage (testing) must be at least 80%."
 
 If the pipeline fails the Quality Gate, the software is rejected (deployment stops).
+
+## 4. Static Code Analysis (SAST)
+
+SonarQube performs **Static Application Security Testing (SAST)**.
+*   **Static**: It analyzes the code *before* it is deployed or running (i.e., when it is just files in the repository).
+*   **Security Testing**: It looks for vulnerabilities that could be exploited.
+
+### Issue Categories
+SonarQube categorizes issues into three main buckets:
+1.  **Security**: Vulnerabilities that could potentialy compromise the application (e.g., SQL Injection, Hardcoded Passwords).
+2.  **Reliability**: Bugs that could cause the application to crash or behave unexpectedly (e.g., Null Pointer Exceptions).
+3.  **Maintainability**: "Code Smells" that make the code hard to work with (e.g., Unnecessary comments, long methods, duplicate code).
+
+## 5. Deployment Workflow Integration
+In a real-world pipeline, SonarQube and Infrastructure as Code (Terraform) work together:
+1.  **Code Commit**: Developer pushes code to Git.
+2.  **Build & Test**: Maven validates and compiles the Java application.
+3.  **SonarQube Scan**: The `mvn verify sonar:sonar` command runs.
+    *   **Pass**: Continue.
+    *   **Fail**: Stop the pipeline immediately.
+4.  **Infrastructure (Terraform)**: If code quality passes, Terraform is used to provision/update the Azure resources (like Web Apps or VMs) where the code will be deployed.
+

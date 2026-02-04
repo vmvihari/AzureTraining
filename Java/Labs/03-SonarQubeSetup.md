@@ -32,3 +32,32 @@ To allow your VM (Maven) to talk to SonarCloud, you need a token.
     *   Click **Generate**.
 3.  **Copy this token immediately**. You will not see it again.
     *   *Save it in Notepad for the next lab.*
+
+## 4. Maven & JDK Compatibility
+
+Before running the scan, ensure your environment is set up correctly.
+
+*   **JDK Version**: Different projects require different JDK versions (e.g., 17 vs 21). Ensure your local development environment matches the project's requirement in `pom.xml`.
+*   **Maven Lifecycle**: Running a higher-level command implies lower levels.
+    *   Running `mvn package` automatically runs `validate`, `compile`, and `test`.
+
+## 5. Running the Scan
+
+The scan is triggered using the `mvn verify` command with the SonarQube plugin parameters.
+
+**Command Syntax**:
+```bash
+mvn verify sonar:sonar \
+  -Dsonar.projectKey=<YOUR_PROJECT_KEY> \
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.login=<YOUR_TOKEN> \
+  -Dsonar.organization=<YOUR_ORG_KEY>
+```
+
+*   **sonar.projectKey**: The unique ID you defined when creating the project in SonarQube.
+*   **sonar.organization**: Your organization key (often your GitHub username).
+*   **sonar.login**: The secret token generated in Step 3.
+
+> [!NOTE]
+> In a professional setting, **DevOps Engineers** handle the pipeline configuration, while **Developers** are responsible for fixing the issues identified by the scan. Setup like project creation and token generation is typically a one-time activity.
+
