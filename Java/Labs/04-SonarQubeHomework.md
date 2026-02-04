@@ -16,6 +16,7 @@
 4.  Generate a SonarQube Token for authentication:
     *   Go to **Account Security** -> **Generate Token**.
     *   Name it (e.g., `HomeworkScan`).
+    2d6c3d8ec8219835f05cd6c4e416b04a2a23f75f
 
 > **Deliverables**:
 > *   Screenshot of the **Project created** in SonarQube Cloud.
@@ -31,7 +32,12 @@ Verify your local environment meets project requirements.
     ```bash
     java -version
     ```
-2.  Verify Maven installation:
+3.  **If Java or Maven is missing**:
+    *   **Java**: Install OpenJDK 17 or 21 (e.g., `sudo apt install openjdk-21-jdk -y` on Linux).
+    *   **Maven**: Install via package manager (`sudo apt install maven`) or [Download Manual](https://maven.apache.org/download.cgi).
+    *   *Refer to [Lab 01](../Labs/01-MavenBuildAndDeploy.md) for detailed steps.*
+
+4.  Verify Maven installation:
     ```bash
     mvn -version
     ```

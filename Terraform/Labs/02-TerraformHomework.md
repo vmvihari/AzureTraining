@@ -12,6 +12,7 @@
     ```powershell
     terraform -version
     ```
+    *   *If not installed, refer to [Lab 01](../Labs/01-InstallationAndBasics.md) for setup instructions.*
 2.  Verify Azure CLI login:
     ```powershell
     az login --use-device-code
