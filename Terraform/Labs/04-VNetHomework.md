@@ -109,8 +109,11 @@ Create a VNet in the **first** Resource Group (`testRG1`).
     ```powershell
     terraform plan
     ```
-3.  **Observe**:
-    *   Terrform plans to **destroy** the subnet.
+3.  **Observe and note**:
+    *   **Which resource Terraform plans to destroy?**
+        *   *Self-Answer*: `azurerm_subnet.sub`.
+    *   **Why the destroy action appears?**
+        *   *Self-Answer*: Because you removed it from the configuration (`main.tf`). Terraform sees it in the State file (so it exists in Azure), but since it's gone from your code, Terraform thinks you want to delete it. Code is the Desired State.
 4.  **Re-enable** the block (uncomment) and run `terraform apply` to ensure it exists for the next task.
 
 ---
@@ -142,4 +145,15 @@ Create a VNet in the **first** Resource Group (`testRG1`).
 
 1.  Visit the [Terraform Registry (AzureRM)](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs).
 2.  Search for `azurerm_virtual_network`.
-3.  Identify mandatory vs optional arguments.
+3.  **Identify**:
+    *   **azurerm_virtual_network**:
+        *   *Mandatory*: `name`, `resource_group_name`, `location`, `address_space`.
+        *   *Optional*: `dns_servers`, `subnet`, `tags`, `ddos_protection_plan`.
+    *   **azurerm_subnet**:
+        *   *Mandatory*: `name`, `resource_group_name`, `virtual_network_name`, `address_prefixes`.
+        *   *Optional*: `delegation` (for linking services like Web Apps), `service_endpoints`, `private_endpoint_network_policies_enabled`.
+
+4.  **Write 3 points on why documentation is important in Terraform**:
+    *   **Updates & Deprecations**: Providers change frequently (e.g., AzureRM v3.0 to v4.0). Documentation warns you about deprecated fields or breaking changes.
+    *   **Discovery**: You can't memorize every optional argument (like `delegation` or timeouts). The docs reveal powerful features you might not know exist.
+    *   **Syntax Accuracy**: Copying the example usage block is the fastest way to get the correct syntax and required structure (blocks vs arguments).
