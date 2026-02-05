@@ -16,7 +16,6 @@
 4.  Generate a SonarQube Token for authentication:
     *   Go to **Account Security** -> **Generate Token**.
     *   Name it (e.g., `HomeworkScan`).
-    2d6c3d8ec8219835f05cd6c4e416b04a2a23f75f
 
 > **Deliverables**:
 > *   Screenshot of the **Project created** in SonarQube Cloud.
@@ -52,14 +51,13 @@ Verify your local environment meets project requirements.
 
 1.  Clone a sample Java Maven project (e.g., Spring Petclinic) or use an existing one.
 2.  Navigate to the project root (where `pom.xml` exists).
-3.  Run the SonarQube scan (Replace generic placeholders with your actual values):
+    *   *Tip: If switching drives (e.g., C: to E:) in CMD, command `cd` alone won't work. Use `cd /d E:\path` or simply type `E:` and press Enter.*
+3.  Run the SonarQube scan.
+    *   **Recommendation**: Run as a single line to avoid copy-paste errors on Windows.
     ```bash
-    mvn verify sonar:sonar \
-      -Dsonar.projectKey=<your-project-key> \
-      -Dsonar.host.url=https://sonarcloud.io \
-      -Dsonar.login=<your-token> \
-      -Dsonar.organization=<your-org-name>
+    mvn verify sonar:sonar -Dsonar.projectKey=<your-project-key> -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=<your-token> -Dsonar.organization=<your-org-name>
     ```
+    *   *Note: If using PowerShell, you can use the backtick (`) for line continuation instead of backslash (\).*
 
 > **Deliverables**:
 > *   Screenshot of **Command execution**.
@@ -82,3 +80,24 @@ Analyze the results on the SonarQube dashboard.
 > *   **Short written summary (5–6 lines)** answering:
 >     *   What type of issues were found?
 >     *   Would this code be allowed to proceed to packaging in a real pipeline? Why?
+
+---
+
+## Troubleshooting
+
+### Error: `MojoExecutionException: UnsupportedOperationException`
+This error typically occurs if your **Java version** is incompatible (too old OR too new) with the SonarQube plugin.
+1.  **Check Java Version**:
+    ```bash
+    java -version
+    ```
+    *   *Issue*: **Java 25** (or extremely new non-LTS versions) is often **too new** for the scanner plugin.
+    *   *Requirement*: You need **Java 17** or **Java 21** (LTS versions).
+2.  **Point Maven to Supported Java**:
+    *   Install JDK 21.
+    *   Set `JAVA_HOME` to point to it before running Maven.
+    *   Example (PowerShell):
+        ```powershell
+        $env:JAVA_HOME="C:\Program Files\Java\jdk-21"
+        mvn verify ...
+        ```

@@ -29,6 +29,25 @@
 1.  Create a new directory named `terraform-rg`.
 2.  Create a file named `main.tf`.
 3.  Add the **Azure RM provider block** and a **Resource block** to create a Resource Group:
+    ```hcl
+    terraform {
+      required_providers {
+        azurerm = {
+          source  = "hashicorp/azurerm"
+          version = "~> 3.0"
+        }
+      }
+    }
+
+    provider "azurerm" {
+      features {}
+    }
+
+    resource "azurerm_resource_group" "homework_rg" {
+      name     = "rg-homework-01"
+      location = "East US"
+    }
+    ```
     *   **Location**: `East US` or `Central India`.
 4.  Run the lifecycle commands:
     ```powershell
